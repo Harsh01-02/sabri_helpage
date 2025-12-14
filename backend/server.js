@@ -33,6 +33,13 @@ app.use('/api/admin', require('./routes/admin'));
 
 app.use('/api/public', require('./routes/public'));
 
+
+// ----------USABLE ROUTES --------------//
+
+app.use('/api/pages', require('./routes/usable/pages'));
+
+// ----------USABLE ROUTES END ---------//
+
 // Public config endpoint
 app.get('/config', (req, res) => {
   // You can customize what config you want to expose here
