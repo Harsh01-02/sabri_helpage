@@ -31,6 +31,8 @@ import InternshipPage from './pages/InternshipPage';
 // Admin imports
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
+import api from './services/api.mjs';
+import { useEffect } from 'react';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -68,6 +70,19 @@ const App = () => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  useEffect(() => {
+  const fetchPages = async () => {
+    try {
+      const pages = await api.getPages();
+      console.log('Pages API response:', pages);
+    } catch (error) {
+      console.error('Failed to fetch pages:', error);
+    }
+  };
+
+  fetchPages();
+}, []);
 
   const renderPage = () => {
     try {
