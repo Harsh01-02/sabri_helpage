@@ -1,93 +1,51 @@
+
 import React from 'react';
 import { IMAGE_URLS, COLORS } from '../constants/config';
+import PageHeader from '../components/layout/PageHeader';
 
-const ElderlyCarePage = ({ onNavigate }) => {
-  const BackButton = ({ onClick }) => (
-    <button 
-      onClick={onClick} 
-      className="mb-8 text-xl font-semibold text-gray-600 hover:text-gray-900 transition duration-150 flex items-center"
-      aria-label="Go back to Home"
-    >
-      <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-      Back
-    </button>
-  );
-
-  const ResponsiveImage = ({ src, alt, className, fallbackText }) => (
-    <div className={className} style={{ position: 'relative', overflow: 'hidden' }}>
-      <img 
-        src={src} 
-        alt={alt} 
-        className="w-full h-full object-cover" 
-        onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/1200x600?text=' + fallbackText; }}
-      />
-    </div>
-  );
-
+const ElderlyCarePage = () => {
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <BackButton onClick={() => onNavigate('home')} />
-        <ResponsiveImage 
-          src={IMAGE_URLS.ELDERLY_CARE}
-          alt="Elderly Care"
-          className="rounded-xl w-full h-64 md:h-96 object-cover mb-8 shadow-lg"
-          fallbackText="Elderly+Care"
-        />
-        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">Elderly Care</h1>
-        <p className="text-xl text-gray-700 mb-8 leading-relaxed font-semibold" style={{ color: '#3B82F6' }}>
-          Sabri Helpage is a caring support system for older people, reaching out to those who are often ignored and unheard. It was started with the idea that every older person deserves care, respect, and emotional security. We work hard to improve the quality of life for these people. We make sure that age never gets in the way of health, comfort, or hope by providing thoughtful help and caring service.
-        </p>
-
-        <p className="text-lg text-gray-700 mb-10 leading-relaxed">
-          Sabri Helpage has created a support system that touches on every important part of the lives of seniors because we understand the problems they face, such as health issues, limited mobility, loneliness, and money problems. Our programs are more than just services; we are acts of kindness, respect, and humanity.
-        </p>
-
-        <h2 className="text-3xl font-bold text-gray-800 mb-6" style={{ color: COLORS.ACCENT_ORANGE }}>The Most Important Services We Offer to Seniors</h2>
-        
-        <div className="space-y-8 mb-10">
-          {/* Service Block 1: Full Eye Care */}
-          <div className="p-6 rounded-xl border-l-4 shadow-md" style={{ borderColor: COLORS.ACCENT_ORANGE, backgroundColor: COLORS.BG_LIGHT_GRAY }}>
-            <h3 className="text-2xl font-bold mb-2 text-gray-900">Full Eye Care</h3>
-            <p className="text-lg text-gray-700">
-              Regular eye exams, early detection of vision problems, and full support for needed surgeries all help seniors get their vision back, feel more confident, and be more independent.
-            </p>
-          </div>
-
-          {/* Service Block 2: Important Medication Help */}
-          <div className="p-6 rounded-xl border-l-4 shadow-md" style={{ borderColor: COLORS.ACCENT_ORANGE, backgroundColor: COLORS.BG_LIGHT_GRAY }}>
-            <h3 className="text-2xl font-bold mb-2 text-gray-900">Important Medication Help</h3>
-            <p className="text-lg text-gray-700">
-              Helping older people get the medicines they need to manage chronic illnesses, which will improve their daily lives and keep their health stable in the long term.
-            </p>
-          </div>
-
-          {/* Service Block 3: Nourishing Food Programs */}
-          <div className="p-6 rounded-xl border-l-4 shadow-md" style={{ borderColor: COLORS.ACCENT_ORANGE, backgroundColor: COLORS.BG_LIGHT_GRAY }}>
-            <h3 className="text-2xl font-bold mb-2 text-gray-900">Nourishing Food Programs</h3>
-            <p className="text-lg text-gray-700">
-              Giving seniors balanced nutritional support to make sure they get the vitamins and minerals they need for strength, immunity, and general health.
-            </p>
+    <div className="min-h-screen" style={{ backgroundColor: COLORS.BG_LIGHT_GRAY }}>
+      <PageHeader title="Elderly Care" subtitle="Dignity, Comfort, and Support for Seniors" />
+      <main className="max-w-3xl mx-auto px-4 py-12">
+        <div className="mb-8">
+          <img
+            src={IMAGE_URLS.ELDERLY_CARE}
+            alt="Elderly Care"
+            className="w-full aspect-[16/7] min-h-[200px] object-cover rounded-xl shadow"
+            onError={e => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/1200x600?text=Elderly+Care'; }}
+          />
+        </div>
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+          <h2 className="text-2xl font-bold mb-6 text-center" style={{ color: COLORS.PRIMARY }}>
+            Elderly Care at Sabri Helpage
+          </h2>
+          <p className="text-lg text-gray-700 mb-6 leading-relaxed text-center">
+            Sabri Helpage is a caring support system for older people, reaching out to those who are often ignored and unheard. Every older person deserves care, respect, and emotional security. We work hard to improve the quality of life for these people, ensuring age never gets in the way of health, comfort, or hope.
+          </p>
+          <h3 className="text-xl font-semibold mb-4" style={{ color: COLORS.PRIMARY }}>
+            Our Key Services
+          </h3>
+          <ul className="list-disc list-inside space-y-2 text-gray-700 mb-8 pl-4">
+            <li>Full Eye Care: Exams, early detection, and surgery support for seniors</li>
+            <li>Medication Help: Access to essential medicines for chronic illnesses</li>
+            <li>Nourishing Food Programs: Balanced nutrition for strength and health</li>
+          </ul>
+          <div className="bg-orange-100 rounded-xl p-6 text-center mt-8">
+            <h4 className="text-lg font-bold mb-2" style={{ color: COLORS.ACCENT_ORANGE }}>
+              Support Our Elders
+            </h4>
+            <p className="text-gray-700 mb-2">Your donation helps us provide essential care, medication, and companionship.</p>
+            <a
+              href="/donate"
+              className="inline-block bg-white text-gray-900 px-8 py-3 rounded-full font-bold transition duration-300 shadow hover:bg-gray-100"
+            >
+              Donate Now
+            </a>
           </div>
         </div>
-
-        <p className="text-lg text-gray-700 mb-10 leading-relaxed italic">
-          Sabri Helpage gives older people the tools they need to live with dignity, comfort, and a renewed sense of belonging through these important programs. Every life we touch is a sign of our commitment to creating a world where kindness is a way of life and where our elders are respected, supported, and loved.
-        </p>
-        
-        <div className="p-6 rounded-xl text-center shadow-lg" style={{ backgroundColor: COLORS.ACCENT_ORANGE }}>
-          <h3 className="text-2xl font-bold mb-3 text-white">Support Our Elders</h3>
-          <p className="text-lg text-white mb-4">Your donation helps us provide essential care, medication, and companionship.</p>
-          <button 
-            onClick={() => onNavigate('donate')}
-            className="bg-white text-gray-900 px-8 py-3 rounded-full font-bold transition duration-300 shadow-xl hover:bg-gray-100"
-          >
-            Donate Now
-          </button>
-        </div>
-
-      </div>
-    </section>
+      </main>
+    </div>
   );
 };
 

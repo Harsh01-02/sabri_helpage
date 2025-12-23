@@ -74,11 +74,14 @@ const App = () => {
   };
 
   useEffect(() => {
+    // makes the api call to get data on app load
   const fetchPages = async () => {
     try {
       setIsLoading(true);
-      const pages = await api.getPages();
-      setPages(pages);
+      const pages = await api.getPages(); // exact api call 
+      setPages(pages); // This sets the whole data in the zustand store or global state
+      console.log("Full pages data from backend:", pages);
+      
     } catch (e) {
       console.error(e);
     } finally {

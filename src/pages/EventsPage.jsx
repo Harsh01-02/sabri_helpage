@@ -1,150 +1,60 @@
-import React from 'react';
 
-const EventsPage = () => (
-  <div className="min-h-screen bg-white">
-    {/* Header */}
-    <div className="bg-[#b73d34] text-white py-4 px-6">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Upcoming Events</h1>
-      </div>
-    </div>
+import React, { useState } from 'react';
 
-    <div className="max-w-6xl mx-auto px-6 py-12">
-      <div className="text-center mb-16">
-        <h1 className="text-5xl font-bold text-[#b73d34] mb-6">Upcoming Events</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Join us at our next gatherings, fundraisers, and community programs to make a difference together.
-        </p>
-        <div className="h-1 w-24 bg-[#b73d34] mx-auto mt-6"></div>
-      </div>
+const YEARS = [2025, 2024, 2023, 2022];
+const IMAGES = {
+  2025: [
+    '/events/2025-1.jpg', '/events/2025-2.jpg', '/events/2025-3.jpg', '/events/2025-4.jpg',
+    '/events/2025-5.jpg', '/events/2025-6.jpg', '/events/2025-7.jpg', '/events/2025-8.jpg',
+  ],
+  2024: [
+    '/events/2024-1.jpg', '/events/2024-2.jpg', '/events/2024-3.jpg', '/events/2024-4.jpg',
+    '/events/2024-5.jpg', '/events/2024-6.jpg', '/events/2024-7.jpg', '/events/2024-8.jpg',
+  ],
+  2023: [
+    '/events/2023-1.jpg', '/events/2023-2.jpg', '/events/2023-3.jpg', '/events/2023-4.jpg',
+    '/events/2023-5.jpg', '/events/2023-6.jpg', '/events/2023-7.jpg', '/events/2023-8.jpg',
+  ],
+  2022: [
+    '/events/2022-1.jpg', '/events/2022-2.jpg', '/events/2022-3.jpg', '/events/2022-4.jpg',
+    '/events/2022-5.jpg', '/events/2022-6.jpg', '/events/2022-7.jpg', '/events/2022-8.jpg',
+  ],
+};
 
-      {/* Stats Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-        <div className="bg-[#f8e9e8] p-6 rounded-xl text-center">
-          <div className="text-4xl font-bold text-[#b73d34] mb-2">15+</div>
-          <div className="text-gray-700">Events This Year</div>
+const EventsPage = () => {
+  const [year, setYear] = useState(YEARS[0]);
+  return (
+    <div className="min-h-screen bg-white py-12">
+      <div className="max-w-3xl mx-auto px-4">
+        <h1 className="text-3xl md:text-4xl font-bold text-center mb-8" style={{ color: '#b73d34' }}>
+          Events
+        </h1>
+        <div className="flex justify-center gap-4 mb-10">
+          {YEARS.map(y => (
+            <button
+              key={y}
+              onClick={() => setYear(y)}
+              className={`px-5 py-2 rounded-full font-semibold border transition-colors ${year === y ? 'bg-[#b73d34] text-white border-[#b73d34]' : 'bg-white text-[#b73d34] border-[#b73d34] hover:bg-[#f8e9e8]'}`}
+            >
+              {y}
+            </button>
+          ))}
         </div>
-        <div className="bg-[#f8e9e8] p-6 rounded-xl text-center">
-          <div className="text-4xl font-bold text-[#b73d34] mb-2">5K+</div>
-          <div className="text-gray-700">Participants</div>
-        </div>
-        <div className="bg-[#f8e9e8] p-6 rounded-xl text-center">
-          <div className="text-4xl font-bold text-[#b73d34] mb-2">12</div>
-          <div className="text-gray-700">Cities Covered</div>
-        </div>
-      </div>
-
-      {/* Events List */}
-      <div className="space-y-8">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white rounded-xl shadow-lg border border-[#e6b8b5] overflow-hidden hover:shadow-xl transition-shadow">
-            <div className="md:flex">
-              {/* Event Date */}
-              <div className="md:w-1/5 bg-[#b73d34] text-white p-8 flex flex-col items-center justify-center">
-                <div className="text-4xl font-bold">2{i}</div>
-                <div className="text-xl uppercase">DEC</div>
-                <div className="text-lg">2025</div>
-                <div className="mt-4 text-sm bg-white text-[#b73d34] px-3 py-1 rounded-full font-semibold">
-                  {i === 1 ? 'Upcoming' : i === 2 ? 'Ongoing' : 'Registration Open'}
-                </div>
-              </div>
-              
-              {/* Event Details */}
-              <div className="md:w-4/5 p-8">
-                <h3 className="text-2xl font-bold text-gray-800 mb-4">Community Health Camp #{i}</h3>
-                <p className="text-gray-600 mb-6">
-                  Join us for a comprehensive health check-up camp focusing on elderly care and mental health awareness. 
-                  Free consultations, health screenings, and wellness workshops for all age groups.
-                </p>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <i className="fas fa-map-marker-alt text-[#b73d34]"></i>
-                    <span className="text-gray-700">Kolkata Community Center, West Bengal</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <i className="fas fa-clock text-[#b73d34]"></i>
-                    <span className="text-gray-700">9:00 AM - 5:00 PM</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <i className="fas fa-users text-[#b73d34]"></i>
-                    <span className="text-gray-700">Expected: 300+ Participants</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <i className="fas fa-tag text-[#b73d34]"></i>
-                    <span className="text-gray-700">Free Entry</span>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <span className="bg-[#f8e9e8] text-[#8c2b23] px-3 py-1 rounded-full text-sm">Health</span>
-                  <span className="bg-[#f8e9e8] text-[#8c2b23] px-3 py-1 rounded-full text-sm">Elderly Care</span>
-                  <span className="bg-[#f8e9e8] text-[#8c2b23] px-3 py-1 rounded-full text-sm">Mental Health</span>
-                  <span className="bg-[#f8e9e8] text-[#8c2b23] px-3 py-1 rounded-full text-sm">Community</span>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button className="px-6 py-3 bg-[#b73d34] text-white font-semibold rounded-lg hover:bg-[#8c2b23] transition-colors flex items-center gap-2 justify-center">
-                    <i className="fas fa-calendar-plus"></i>
-                    Register Now
-                  </button>
-                  <button className="px-6 py-3 border border-[#b73d34] text-[#b73d34] font-semibold rounded-lg hover:bg-[#f8e9e8] transition-colors flex items-center gap-2 justify-center">
-                    <i className="fas fa-share-alt"></i>
-                    Share Event
-                  </button>
-                  <button className="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 justify-center">
-                    <i className="fas fa-info-circle"></i>
-                    More Details
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Past Events Section */}
-      <div className="mt-20">
-        <h2 className="text-3xl font-bold text-[#b73d34] mb-8 text-center">Past Events</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-white rounded-lg border border-[#e6b8b5] p-6 hover:shadow-lg transition-shadow">
-              <div className="text-[#b73d34] font-bold text-lg mb-2">Nov {15 + i}, 2025</div>
-              <h3 className="text-xl font-bold text-gray-800 mb-3">Youth Empowerment Workshop</h3>
-              <p className="text-gray-600 text-sm mb-4">
-                Skill development session for underprivileged youth in rural communities.
-              </p>
-              <div className="flex items-center text-sm text-gray-500 mb-4">
-                <i className="fas fa-map-marker-alt mr-2"></i>
-                <span>Delhi Center</span>
-              </div>
-              <button className="w-full py-2 border border-[#b73d34] text-[#b73d34] font-medium rounded-lg hover:bg-[#f8e9e8] transition-colors">
-                View Photos
-              </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {IMAGES[year].map((img, idx) => (
+            <div key={img} className="rounded-xl overflow-hidden shadow border border-gray-100 bg-gray-50">
+              <img
+                src={img}
+                alt={`Event ${idx + 1}`}
+                className="w-full h-56 object-cover"
+                onError={e => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/600x300?text=Event+Image'; }}
+              />
             </div>
           ))}
         </div>
       </div>
-
-      {/* Newsletter Signup */}
-      <div className="mt-16 bg-[#f8e9e8] rounded-xl p-8 text-center">
-        <h3 className="text-2xl font-bold text-[#b73d34] mb-4">Stay Updated</h3>
-        <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-          Subscribe to our newsletter to get notified about upcoming events, volunteer opportunities, and community programs.
-        </p>
-        <div className="max-w-md mx-auto flex gap-4">
-          <input 
-            type="email" 
-            placeholder="Enter your email" 
-            className="flex-1 px-4 py-3 border border-[#e6b8b5] rounded-lg focus:ring-2 focus:ring-[#b73d34] outline-none"
-          />
-          <button className="px-6 py-3 bg-[#b73d34] text-white font-semibold rounded-lg hover:bg-[#8c2b23] transition-colors">
-            Subscribe
-          </button>
-        </div>
-      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default EventsPage;

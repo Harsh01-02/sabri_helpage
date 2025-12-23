@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 import { COLORS } from '../constants/config';
 import PageHeader from '../components/layout/PageHeader';
+import { usePagesStore } from '../stores/pageInformationSlice';
 
-const ILCPage = () => {
+const ILCPage = ({ onNavigate }) => {
+  const pageData = usePagesStore((state)=>state.getPageBySlug("ilc")) // this line gets the data for home page from the global store
+  React.useEffect(() => {
+    if (pageData) {
+      console.log("ILC page data:", pageData); // currently just printing this data hence its visible on console
+    }
+  }, [pageData]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFocusAreas, setSelectedFocusAreas] = useState([]);
   const [otherFocusArea, setOtherFocusArea] = useState('');
@@ -71,74 +78,75 @@ const ILCPage = () => {
     "Health & Well-being"
   ];
 
+
+  if (!pageData) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="min-h-screen bg-white font-sans text-gray-800">
-      <PageHeader title="SSIC" subtitle="Impact Leaders Circle" />
-      {/* Main Content */}
+    <div className="min-h-screen" style={{ backgroundColor: COLORS.BG_LIGHT_GRAY }}>
+      <PageHeader title={pageData.title || "SSIC"} subtitle={pageData.meta?.description || "Impact Leaders Circle"} />
       <main className="max-w-5xl mx-auto px-6 py-12">
-        
-        {/* Welcome Title */}
-        <div className="text-center mb-12 mt-8">
-          <h2 className="text-4xl font-bold mb-4" style={{ color: COLORS.PRIMARY }}>
-            Welcome to Sabri Social Impact Club!
-          </h2>
-          <div className="h-1 w-24 mx-auto" style={{ backgroundColor: COLORS.PRIMARY }}></div>
-        </div>
-
-        {/* Body Text */}
-        <div className="prose max-w-none text-gray-700 leading-relaxed text-justify mb-16">
-          <p className="mb-4 text-lg">
-            <span className="font-bold" style={{ color: COLORS.PRIMARY }}>SSIC</span> is the vision of Sabri Helpage to create a caring and socially responsible community where businesses and nonprofits work together to make a difference in society that lasts.
-          </p>
-          <p className="text-lg">
-            The Sabri Social Impact Club wants to see a future where people work together to help weak communities, give youth power, support girls, and make India's environmental and social welfare system stronger.
-          </p>
-        </div>
-
-        {/* Register Button */}
-        <div className="flex justify-center mb-16">
-          <button 
-            onClick={toggleModal}
-            className="group relative px-8 py-4 text-white font-bold rounded-full shadow-lg transition-all transform hover:-translate-y-1 flex items-center gap-3"
-            style={{ backgroundColor: COLORS.PRIMARY }}
-          >
-            Register for SSIC Membership
-            <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-          </button>
-        </div>
-
-      {/* Mission Banner */}
-      <div className="w-full py-16 px-6 text-center shadow-inner relative overflow-hidden" style={{ backgroundColor: COLORS.PRIMARY }}>
-        <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-white"></div>
-        <div className="max-w-4xl mx-auto relative z-10">
-          <p className="text-2xl md:text-3xl text-white font-serif italic leading-normal">
-            "To create a thriving ecosystem that connects people and organisations that care about social welfare and making a difference."
-          </p>
-          <p className="mt-4 font-semibold tracking-wider uppercase text-sm" style={{ color: COLORS.PRIMARY_PALE }}>
-            — SSIC Mission Statement
-          </p>
-        </div>
-      </div>
-
-      {/* Mission Section */}
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        <h3 className="text-3xl mb-8 font-serif border-b pb-4" style={{ color: COLORS.PRIMARY, borderColor: COLORS.PRIMARY_PALE }}>Our Mission</h3>
-        
-        <div className="space-y-6 text-gray-700">
-          {[
-            "To create a thriving ecosystem that connects people and organisations that care about social welfare and making a difference.",
-            "To promote solutions based on research and new ways of doing things that deal with important social problems in a way that has a lasting, large-scale effect.",
-            "To help businesses and non-profits share information, work together, and build their skills so that social development efforts are stronger and more unified.",
-            "To encourage people to act in a socially responsible way through structured programs, partnerships, and initiatives that make communities stronger.",
-            "To create a welcoming space where people can share their thoughts, resources, and chances to make society stronger, healthier, and more caring."
-          ].map((mission, idx) => (
-            <div key={idx} className="flex gap-4 items-start">
-              <span className="font-bold text-xl" style={{ color: COLORS.PRIMARY }}>›</span>
-              <p className="leading-relaxed">{mission}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+        {pageData.sections?.map((section, idx) => {
+          if (section.type === "welcome") {
+            return (
+              <div key={idx} className="mb-16 mt-8 max-w-5xl mx-auto">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center font-sans" style={{ fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em' }}>
+                  <h2 className="text-xl md:text-2xl font-medium mb-4 tracking-wide text-center" style={{ color: COLORS.PRIMARY }}>
+                    {section.title}
+                  </h2>
+                  <div className="h-1 w-16 mb-8 rounded-full" style={{ backgroundColor: COLORS.PRIMARY }}></div>
+                  {section.paragraphs?.map((p, i) => (
+                    <div key={i} className="w-full rounded-xl mb-4" style={{ background: 'linear-gradient(90deg, #ffe4ef1a 0%, #fff 100%)' }}>
+                      <p className="text-base text-gray-700 text-center leading-relaxed py-4">{p}</p>
+                    </div>
+                  ))}
+                  <button 
+                    onClick={toggleModal}
+                    className="group relative px-8 py-4 text-white font-semibold rounded-full shadow-md transition-all hover:shadow-lg hover:-translate-y-1 flex items-center gap-3 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    style={{ backgroundColor: COLORS.PRIMARY }}
+                  >
+                    Register for SSIC Membership
+                    <i className="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                  </button>
+                </div>
+              </div>
+            );
+          }
+          if (section.type === "mission-banner") {
+            return (
+              <div key={idx} className="w-full py-16 px-6 text-center shadow-inner relative overflow-hidden rounded-2xl" style={{ backgroundColor: COLORS.PRIMARY }}>
+                <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-white rounded-2xl"></div>
+                <div className="max-w-4xl mx-auto relative z-10">
+                  <p className="text-2xl md:text-3xl text-white font-serif italic leading-normal">
+                    {section.quote}
+                  </p>
+                  <p className="mt-4 font-semibold tracking-wider uppercase text-sm text-white" style={{ color: COLORS.PRIMARY_PALE }}>
+                    — {section.attribution}
+                  </p>
+                </div>
+              </div>
+            );
+          }
+          if (section.type === "mission-list") {
+            return (
+              <div key={idx} className="max-w-5xl mx-auto px-6 py-16">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                  <h3 className="text-xl font-bold text-primary mb-6" style={{ color: COLORS.PRIMARY }}>{section.title}</h3>
+                  <div className="space-y-4 text-gray-700">
+                    {section.items?.map((mission, i) => (
+                      <div key={i} className="flex gap-3 items-start w-full rounded-xl" style={{ background: 'linear-gradient(90deg, #ffe4ef1a 0%, #fff 100%)' }}>
+                        <span className="font-bold text-lg mt-4 ml-4" style={{ color: COLORS.PRIMARY }}>›</span>
+                        <p className="leading-relaxed py-4 mr-4">{mission}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })}
       </main>
 
       {/* Registration Modal */}

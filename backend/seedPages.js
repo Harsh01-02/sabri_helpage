@@ -33,13 +33,11 @@ const connectDB = async () => {
  */
 const seedPages = async () => {
   try {
-    const count = await Page.countDocuments();
+    // Remove all existing documents
+    await Page.deleteMany({});
+    console.log('Old pages removed.');
 
-    if (count > 0) {
-      console.log('Pages collection already has data. Skipping seed.');
-      return;
-    }
-
+    // Insert new data
     await Page.insertMany(pages);
     console.log(`Successfully seeded ${pages.length} pages`);
   } catch (error) {
