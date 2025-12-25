@@ -178,7 +178,7 @@ const HomePage = ({ onNavigate }) => {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-16">
                           {(section.items || []).map((stat, idx) => (
                             <div key={idx} className="bg-[#8B3E35] p-7 rounded-2xl text-center transition-all duration-300 hover:bg-[#7A3529]">
-                              <span className="block text-[2.75rem] md:text-[3.2rem] font-bold text-white leading-none">{stat.value}</span>
+                              <span className="block text-[2.75rem] md:text-[3.2rem] font-bold text-white leading-none">{String(stat.value).replace(/\+$/, '')}</span>
                               <span className="block text-[11px] font-bold text-white uppercase tracking-wide mt-3">{stat.label}</span>
                             </div>
                           ))}
@@ -287,19 +287,13 @@ const HomePage = ({ onNavigate }) => {
             return (
               <section key={idx} className="py-20 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <SectionTitle className="text-center text-primary">{section.heading}</SectionTitle>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mt-10">
+                  <SectionTitle className="text-center text-primary mb-12">{section.heading}</SectionTitle>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {(section.items || []).map((item, i) => (
-                      <div key={i} className="bg-gray-50 rounded-2xl shadow-md p-8 flex flex-col items-center text-center">
-                        <ResponsiveImage src={item.image} className="w-20 h-20 rounded-full mb-4 object-cover" />
-                        <h4 className="text-lg font-bold text-primary mb-1">{item.name}</h4>
+                      <div key={i} className="bg-gray-50 rounded-xl shadow p-5 flex flex-col items-center text-center">
+                        <h4 className="text-base font-semibold text-primary mb-1">{item.name}</h4>
                         <span className="text-xs text-gray-500 mb-2">{item.role}</span>
-                        <p className="text-gray-700 mb-4">{item.content}</p>
-                        <div className="flex gap-1 justify-center">
-                          {Array.from({ length: item.rating }).map((_, idx) => (
-                            <span key={idx} className="text-yellow-400">★</span>
-                          ))}
-                        </div>
+                        <p className="text-gray-700 mb-2 text-sm">{item.content}</p>
                       </div>
                     ))}
                   </div>

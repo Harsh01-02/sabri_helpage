@@ -15,22 +15,16 @@ const AwardsPage = () => {
       <PageHeader title="Awards" subtitle="Recognitions of our journey" />
       <div className="max-w-3xl mx-auto px-6">
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-extrabold mb-6" style={{ color: '#b73d34', letterSpacing: '0.01em' }}>
-            Our True Rewards
+          <h2 className="text-xl md:text-2xl font-normal mb-4 tracking-tight">
+            Sabri Helpage's Impactful Work
           </h2>
           <div className="mx-auto max-w-2xl">
-            <p className="text-lg md:text-xl text-gray-700 leading-relaxed mb-4">
-              <span className="font-semibold text-[#b73d34]">Let's Expand on Sabri Helpage's Impactful Work</span>
-            </p>
-            <p className="text-base md:text-lg text-gray-600 mb-4">
-              While <span className="font-semibold text-[#b73d34]">formal awards and recognition</span> are undoubtedly valuable, Sabri Helpage's greatest reward lies in the <span className="font-semibold text-[#b73d34]">tangible impact</span> it creates in the lives of its beneficiaries.
-            </p>
-            <p className="text-base md:text-lg text-gray-600 mb-4">
-              The <span className="font-semibold text-[#b73d34]">satisfaction, hope, and independence</span> instilled in the elderly, street girls, and women we serve are the true testaments to our mission.
-            </p>
-            <p className="text-base md:text-lg text-gray-600 mb-2">
-              Every <span className="font-semibold text-[#b73d34]">smile</span>, every <span className="font-semibold text-[#b73d34]">success story</span>, and every <span className="font-semibold text-[#b73d34]">life transformed</span> is an award in itself.
-            </p>
+            {/* Removed duplicate heading */}
+            <ul className="text-base md:text-lg text-gray-700 mb-6 flex flex-col gap-3 items-center">
+              <li className="w-full max-w-xl text-center md:text-left">Formal awards and recognition are valuable, but our greatest reward is the tangible impact we create in the lives of our beneficiaries.</li>
+              <li className="w-full max-w-xl text-center md:text-left">The satisfaction, hope, and independence instilled in the elderly, street girls, and women we serve are the true testaments to our mission.</li>
+              <li className="w-full max-w-xl text-center md:text-left">Every smile, success story, and life transformed is an award in itself.</li>
+            </ul>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 justify-items-center">
@@ -44,7 +38,7 @@ const AwardsPage = () => {
                   onError={e => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/400x220?text=Award'; }}
                 />
               </div>
-              <span className="text-sm text-gray-500 font-medium">{img.date}</span>
+              <span className="text-sm text-gray-600 font-medium">{img.date}</span>
             </div>
           ))}
         </div>

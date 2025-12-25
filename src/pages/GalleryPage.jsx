@@ -1,55 +1,45 @@
-import React, { useState, useEffect } from 'react';
 
-import { COLORS } from '../constants/config';
-import PageHeader from '../components/layout/PageHeader';
+import React from 'react';
+
+
+const staticImages = [
+  { url: '/event1.jpg', caption: 'Annual Charity Gala' },
+  { url: '/event2.jpg', caption: 'Community Outreach Program' },
+  { url: '/event3.jpg', caption: 'Health Camp' },
+  { url: '/event4.jpg', caption: 'Volunteer Meetup' },
+  { url: '/event5.jpg', caption: 'Elderly Care Initiative' },
+  { url: '/event6.jpg', caption: 'Girl Child Education Drive' },
+  { url: '/elderlyCareImg.jpg', caption: 'Elderly Care' },
+  { url: '/MentalHealth.jpg', caption: 'Mental Health Workshop' },
+  { url: '/girlChildEducation.jpg', caption: 'Girl Child Education' },
+  { url: '/WaterFilteration.jpg', caption: 'Water Filtration Project' },
+  { url: '/events1.jpg', caption: 'Fundraiser Walkathon' },
+  { url: '/events2.jpg', caption: 'Awareness Campaign' },
+];
 import { usePagesStore } from '../stores/pageInformationSlice';
 
-const GalleryPage = () => {
+
+const GalleryPage = ({ onNavigate }) => {
   const pageData = usePagesStore((state) => state.getPageBySlug('gallery'));
-  useEffect(() => {
+  React.useEffect(() => {
     if (pageData) {
       console.log('Gallery page data:', pageData);
     }
   }, [pageData]);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-
-  if (!pageData) {
-    return <div>Loading...</div>;
-  }
-
-  // Find the gallery section
-  const gallerySection = pageData.sections?.find(section => section.type === 'gallery');
-  const images = gallerySection?.images || [];
-  const categories = ['All', ...new Set(images.map(img => img.category))];
-  const filteredImages = selectedCategory === 'All'
-    ? images
-    : images.filter(img => img.category === selectedCategory);
 
   return (
     <section className="py-0 bg-white">
-      <PageHeader 
-        title={pageData.title || 'Our Gallery'}
-        subtitle={pageData.meta?.description || ''}
-        bgImage="/images/gallery/gallery-header.jpg"
-      />
-      <div className="max-w-5xl mx-auto px-4 py-12">
-        <div className="flex flex-wrap gap-4 mb-8 justify-center">
-          {categories.map(category => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-5 py-2 rounded-full font-semibold border transition-colors ${selectedCategory === category ? 'bg-[#b73d34] text-white border-[#b73d34]' : 'bg-white text-[#b73d34] border-[#b73d34] hover:bg-[#f8e9e8]'}`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+      <div className="text-center py-10">
+        <h1 className="text-4xl font-bold mb-2 text-primary">Our Gallery</h1>
+        <p className="text-lg text-gray-600">A glimpse into our work and impact</p>
+      </div>
+      <div className="max-w-5xl mx-auto px-4 pb-24 md:pb-32">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {filteredImages.map((img, idx) => (
-            <div key={img.id || idx} className="rounded-xl overflow-hidden shadow border border-gray-100 bg-gray-50 flex flex-col">
+          {staticImages.map((img, idx) => (
+            <div key={idx} className="rounded-xl overflow-hidden shadow border border-gray-100 bg-gray-50 flex flex-col">
               <img
                 src={img.url}
-                alt={img.caption || 'Gallery Image'}
+                alt={img.caption}
                 className="w-full h-64 object-cover"
                 onError={e => {
                   e.target.onerror = null;
@@ -65,6 +55,7 @@ const GalleryPage = () => {
       </div>
     </section>
   );
-};
+}
+
 
 export default GalleryPage;

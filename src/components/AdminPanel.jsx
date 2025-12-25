@@ -159,7 +159,74 @@ const AdminPanel = () => {
     };
   }, [pageDoc, selectedPage]);
 
+  // Helper to detect image fields
+  const isImageField = (label) => {
+    const l = label.toLowerCase();
+    return (
+      l === 'image' ||
+      l === 'img' ||
+      l.endsWith('_image') ||
+      l.endsWith('_img') ||
+      l.includes('img') ||
+      l.includes('image')
+    );
+  };
+
+  // Upload image and set URL
+  const handleImageUpload = async (file, onChange) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const token = localStorage.getItem('adminToken');
+      // Update to backend URL (adjust port if needed)
+      const res = await fetch('http://localhost:5000/api/upload/image', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+      });
+      const data = await res.json();
+      // Accept either url or path from backend
+      if (data.url || data.path) {
+        onChange({ target: { value: data.url || data.path } });
+      } else {
+        alert('Image upload failed');
+      }
+    } catch (e) {
+      console.error('Image upload error:', e);
+      alert('Image upload error');
+    }
+  };
+
   const renderFieldEditor = (label, value, onChange, type = 'text', placeholder = '') => {
+    if (isImageField(label)) {
+      return (
+        <div key={label} className="space-y-1">
+          <label className="text-xs font-medium text-gray-700">{label}</label>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={value || ''}
+              onChange={onChange}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+              placeholder={placeholder || 'Image URL'}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={e => {
+                if (e.target.files && e.target.files[0]) {
+                  handleImageUpload(e.target.files[0], onChange);
+                }
+              }}
+              className="text-xs"
+            />
+          </div>
+          {value && value.startsWith('/') && (
+            <img src={value} alt="preview" className="mt-2 rounded h-16 border" />
+          )}
+        </div>
+      );
+    }
     if (type === 'textarea') {
       return (
         <div key={label} className="space-y-1">
@@ -174,7 +241,6 @@ const AdminPanel = () => {
         </div>
       );
     }
-    
     return (
       <div key={label} className="space-y-1">
         <label className="text-xs font-medium text-gray-700">{label}</label>
@@ -426,26 +492,34 @@ const AdminPanel = () => {
             key !== 'type' &&
             typeof section[key] !== 'object' &&
             !Array.isArray(section[key])
-          ).map((key) => {
+          ).map((key, idx) => {
             const value = section[key];
-            return renderFieldEditor(
-              key,
-              value,
-              (e) => updateSection(section.key, { [key]: e.target.value }),
-              key.toLowerCase().includes('description') || key.toLowerCase().includes('text') || key.toLowerCase().includes('content') ? 'textarea' : 'text'
+            return (
+              <React.Fragment key={key}>
+                {renderFieldEditor(
+                  key,
+                  value,
+                  (e) => updateSection(section.key, { [key]: e.target.value }),
+                  key.toLowerCase().includes('description') || key.toLowerCase().includes('text') || key.toLowerCase().includes('content') ? 'textarea' : 'text'
+                )}
+              </React.Fragment>
             );
           })}
           
           {/* Render array fields */}
           {Object.keys(section).filter(key => 
             Array.isArray(section[key])
-          ).map((key) => {
+          ).map((key, idx) => {
             const items = section[key];
-            return renderArrayEditor(
-              key,
-              items,
-              (updated) => updateSection(section.key, { [key]: updated }),
-              items.length > 0 && typeof items[0] === 'object' ? 'object' : 'string'
+            return (
+              <React.Fragment key={key}>
+                {renderArrayEditor(
+                  key,
+                  items,
+                  (updated) => updateSection(section.key, { [key]: updated }),
+                  items.length > 0 && typeof items[0] === 'object' ? 'object' : 'string'
+                )}
+              </React.Fragment>
             );
           })}
           
@@ -455,12 +529,16 @@ const AdminPanel = () => {
             section[key] !== null && 
             !Array.isArray(section[key]) &&
             key !== 'key'
-          ).map((key) => {
+          ).map((key, idx) => {
             const obj = section[key];
-            return renderObjectEditor(
-              key,
-              obj,
-              (updated) => updateSection(section.key, { [key]: updated })
+            return (
+              <React.Fragment key={key}>
+                {renderObjectEditor(
+                  key,
+                  obj,
+                  (updated) => updateSection(section.key, { [key]: updated })
+                )}
+              </React.Fragment>
             );
           })}
         </div>
@@ -925,7 +1003,7 @@ const AdminPanel = () => {
             {activeSection === 'contacts' && (
               <div className="space-y-4">
                 {contacts.map((contact) => (
-                  <div key={contact._id} className="bg-white rounded-xl p-5 border border-gray-200">
+                  <div key={contact._id || contact.email || contact.name} className="bg-white rounded-xl p-5 border border-gray-200">
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-semibold text-gray-900">{contact.name}</h3>
@@ -948,4 +1026,4 @@ const AdminPanel = () => {
     </div>
   );
 };
-export default AdminPanel;
+export default AdminPanel; 

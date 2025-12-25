@@ -1,76 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { COLORS } from '../constants/config';
 import Section from '../components/layout/Section';
 import Container from '../components/layout/Container';
 import PageHeader from '../components/layout/PageHeader';
+import { usePagesStore } from '../stores/pageInformationSlice';
 
 const ContactPage = ({ onNavigate }) => {
   const pageData = usePagesStore((state) => state.getPageBySlug('contact'));
-  useEffect(() => {
+  React.useEffect(() => {
     if (pageData) {
       console.log('Contact page data:', pageData);
     }
   }, [pageData]);
+
+  // --- Contact form state and handlers ---
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
   });
-  const [formStatus, setFormStatus] = useState({
-    loading: false,
-    error: null,
-    success: false
-  });
-  const [errors, setErrors] = useState({});
+  const [formStatus, setFormStatus] = useState({ loading: false, success: false, error: '' });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    if (!formData.message.trim()) newErrors.message = 'Message is required';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
-
-    setFormStatus({ loading: true, error: null, success: false });
-
-    // Simulate form submission
-    setTimeout(() => {
-      // In a real app, you would make an API call here
-      console.log('Form submitted:', formData);
-
-      setFormStatus({
-        loading: false,
-        error: null,
-        success: true
+    setFormStatus({ loading: true, success: false, error: '' });
+    // Basic validation
+    if (!formData.name || !formData.email || !formData.message) {
+      setFormStatus({ loading: false, success: false, error: 'Please fill in all required fields.' });
+      return;
+    }
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
-
-      // Reset form after successful submission
-      setFormData({ name: '', email: '', subject: '', message: '' });
-
-      // Reset success message after 5 seconds
-      setTimeout(() => {
-        setFormStatus(prev => ({ ...prev, success: false }));
-      }, 5000);
-    }, 1000);
+      if (res.ok) {
+        setFormStatus({ loading: false, success: true, error: '' });
+        setFormData({ name: '', email: '', subject: '', message: '' });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setFormStatus({ loading: false, success: false, error: data.message || 'Failed to send message.' });
+      }
+    } catch (err) {
+      setFormStatus({ loading: false, success: false, error: 'Network error. Please try again.' });
+    }
   };
 
   return (
@@ -104,7 +85,6 @@ const ContactPage = ({ onNavigate }) => {
                     placeholder="Your Name *"
                     className="w-full p-4 border-2 rounded-lg focus:outline-none text-sm bg-[#FDFCFA] transition" style={{ borderColor: COLORS.PRIMARY_PALE }}
                   />
-                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                 </div>
                 <div>
                   <input
@@ -115,7 +95,6 @@ const ContactPage = ({ onNavigate }) => {
                     placeholder="Your Email *"
                     className="w-full p-4 border-2 rounded-lg focus:outline-none text-sm bg-[#FDFCFA] transition" style={{ borderColor: COLORS.PRIMARY_PALE }}
                   />
-                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
               </div>
 
@@ -138,7 +117,6 @@ const ContactPage = ({ onNavigate }) => {
                   className="w-full p-4 border-2 rounded-lg focus:outline-none text-sm bg-[#FDFCFA] transition resize-none" style={{ borderColor: COLORS.PRIMARY_PALE }}
                 ></textarea>
                 <span className="absolute bottom-4 right-4 text-gray-400 text-xl">✎</span>
-                {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
               </div>
 
               <div className="text-center pt-2">
@@ -159,11 +137,6 @@ const ContactPage = ({ onNavigate }) => {
                   {formStatus.error && (
                     <div className="text-sm text-red-600">
                       {formStatus.error}
-                    </div>
-                  )}
-                  {Object.keys(errors).length > 0 && (
-                    <div className="text-sm text-red-600 text-left mt-2">
-                      Please fill in all required fields correctly.
                     </div>
                   )}
                 </div>
@@ -223,7 +196,7 @@ const ContactPage = ({ onNavigate }) => {
 
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center" style={{ fontFamily: 'Inter, Segoe UI, Arial, sans-serif', letterSpacing: '0.01em' }}>
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5" style={{ backgroundColor: COLORS.PRIMARY, color: '#fff' }}>
-                <svg className="w-8 h-8" style={{ color: '#fff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.756l2.048 1.024a11.042 11.042 0 010 1.986l-2.048 1.024a1 1 0 00-.502.756l-1.498 4.493a1 1 0 00-.948.684H5a2 2 0 01-2-2V5z" /></svg>
+                <svg className="w-8 h-8" style={{ color: '#fff' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 00.948.684l1.498 4.493a1 1 0 00.502.756l-2.048 1.024a11.042 11.042 0 010 1.986l-2.048 1.024a1 1 0 00-.502.756l-1.498 4.493a1 1 0 00-.948.684H5a2 2 0 01-2-2V5z" /></svg>
               </div>
               <h4 className="font-bold mb-3 text-lg" style={{ color: COLORS.PRIMARY }}>Telephone</h4>
               <p className="text-sm text-gray-600 mb-5 leading-relaxed">033 4601 3886</p>

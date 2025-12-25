@@ -27,10 +27,10 @@ const Footer = ({ onNavigate }) => {
                             <div>
                                 <h5 className="font-bold mb-4">Get Involved</h5>
                                 <ul className="space-y-3">
-                                    <li><a href="/internship" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Internship</a></li>
-                                    <li><a href="/volunteer" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Volunteer</a></li>
-                                    <li><a href="/clubs" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Clubs (SSIC)</a></li>
-                                    <li><a href="/awards" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Awards</a></li>
+                                    <li><button onClick={() => onNavigate('internship')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Internship</button></li>
+                                    <li><button onClick={() => onNavigate('csr-summit')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />CSR</button></li>
+                                    <li><button onClick={() => onNavigate('ilc')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Clubs (SSIC)</button></li>
+                                    <li><button onClick={() => onNavigate('awards')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Awards</button></li>
                                 </ul>
                             </div>
 
@@ -38,10 +38,10 @@ const Footer = ({ onNavigate }) => {
                             <div>
                                 <h5 className="font-bold mb-4">Causes & Programs</h5>
                                 <ul className="space-y-3">
-                                    <li><a href="/support" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Support a Cause</a></li>
-                                    <li><a href="/elderly-care" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Elderly Care</a></li>
-                                    <li><a href="/mental-health" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Mental Health</a></li>
-                                    <li><a href="/girl-child" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Girl Child</a></li>
+                                    <li><button onClick={() => onNavigate('donate')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Support a Cause</button></li>
+                                    <li><button onClick={() => onNavigate('elderly-care')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Elderly Care</button></li>
+                                    <li><button onClick={() => onNavigate('mental-health')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Mental Health</button></li>
+                                    <li><button onClick={() => onNavigate('girl-education')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Girl Child</button></li>
                                 </ul>
                             </div>
 
@@ -49,11 +49,11 @@ const Footer = ({ onNavigate }) => {
                             <div>
                                 <h5 className="font-bold mb-4">Explore</h5>
                                 <ul className="space-y-3">
-                                    <li><a href="/events" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Events</a></li>
-                                    <li><a href="/gallery" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Gallery</a></li>
-                                    <li><a href="/publications" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Publications</a></li>
-                                    <li><a href="/media" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Media</a></li>
-                                    <li><a href="/contact" className="flex items-center text-white/90 hover:text-white transition duration-200"><ChevronRight className="w-4 h-4 mr-1" />Contact</a></li>
+                                    <li><button onClick={() => onNavigate('events')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Events</button></li>
+                                    <li><button onClick={() => onNavigate('gallery')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Gallery</button></li>
+                                    <li><button onClick={() => onNavigate('publications')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Publications</button></li>
+                                    <li><button onClick={() => onNavigate('faq')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Faq</button></li>
+                                    <li><button onClick={() => onNavigate('contact')} className="flex items-center text-white/90 hover:text-white transition duration-200 text-left w-full"><ChevronRight className="w-4 h-4 mr-1" />Contact</button></li>
                                 </ul>
                             </div>
                         </div>
@@ -69,16 +69,19 @@ const Footer = ({ onNavigate }) => {
                         <div className="mb-8">
                             <h3 className="text-xl font-bold mb-3 border-b-2 border-white pb-2 inline-block">Stay Updated</h3>
                             <p className="text-white/90 mb-4 mt-4">Subscribe to our newsletter for the latest impact stories.</p>
-                            <div className="flex">
+                            <form onSubmit={handleSubmit} className="flex">
                                 <input
                                     type="email"
                                     placeholder="Your Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="flex-1 px-4 py-3 rounded-l-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-white"
+                                    required
                                 />
-                                <button className="bg-white text-[#C85C5C] px-6 py-3 rounded-r-lg hover:bg-gray-100 transition duration-300">
+                                <button type="submit" className="bg-white text-[#C85C5C] px-6 py-3 rounded-r-lg hover:bg-gray-100 transition duration-300">
                                     <ChevronRight className="w-5 h-5" />
                                 </button>
-                            </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -116,9 +119,9 @@ const Footer = ({ onNavigate }) => {
 
                         {/* Footer Links */}
                         <div className="flex space-x-4" style={{ marginLeft: '30%' }}>
-                            <a href="/about" className="text-white hover:text-gray-200 text-sm font-bold transition duration-300">About</a>
-                            <a href="/terms" className="text-white hover:text-gray-200 text-sm font-bold transition duration-300">Terms</a>
-                            <a href="/privacy" className="text-white hover:text-gray-200 text-sm font-bold transition duration-300">Privacy</a>
+                            <button onClick={() => onNavigate('about')} className="text-white hover:text-gray-200 text-sm font-bold transition duration-300">About</button>
+                            <button onClick={() => onNavigate('terms')} className="text-white hover:text-gray-200 text-sm font-bold transition duration-300">Terms</button>
+                            <button onClick={() => onNavigate('privacy')} className="text-white hover:text-gray-200 text-sm font-bold transition duration-300">Privacy</button>
                         </div>
                     </div>
                 </div>

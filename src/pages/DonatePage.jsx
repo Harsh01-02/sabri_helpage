@@ -119,7 +119,6 @@ const DonatePage = ({ onNavigate = () => {} }) => {
 
   return (
     <div className="min-h-screen font-sans antialiased" style={{ backgroundColor: COLORS.BG_LIGHT_GRAY }}>
-      <PageHeader title="Donate" subtitle="Your support fuels our mission" />
       <div className="max-w-5xl mx-auto px-6 py-6 sm:py-10">
 
         {/* Step 1 - Donation Form */}
