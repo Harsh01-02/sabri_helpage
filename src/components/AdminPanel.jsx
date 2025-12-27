@@ -11,6 +11,12 @@ const AdminPanel = () => {
   const [selectedSubsection, setSelectedSubsection] = useState('global');
   const [searchTerm, setSearchTerm] = useState('');
   const [editingSection, setEditingSection] = useState(null);
+  const [expandedSections, setExpandedSections] = useState(new Set());
+
+  // Collapse all sections by default when page loads or selectedPage changes
+  useEffect(() => {
+    setExpandedSections(new Set());
+  }, [selectedPage]);
   const [pageDoc, setPageDoc] = useState(null);
   
   // Get pages from Zustand store
@@ -23,6 +29,9 @@ const AdminPanel = () => {
   const [error, setError] = useState('');
   const [contacts, setContacts] = useState([]);
   const [user, setUser] = useState(null);
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [roles, setRoles] = useState([
     {
       id: 'admin',
@@ -61,28 +70,60 @@ const AdminPanel = () => {
     { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
+  // Compute dashboard stats from storePages
+  const totalPages = storePages.length;
+  const publishedPages = storePages.filter(p => p.status === 'published').length;
+  const draftPages = storePages.filter(p => p.status === 'draft').length;
+  const archivedPages = storePages.filter(p => p.status === 'archived').length;
   const stats = [
-    { label: 'Total Pages', value: '10', change: '+12%', icon: FileText },
-    { label: 'Published', value: '8', change: '+8%', icon: Check },
-    { label: 'Draft', value: '1', change: '-3%', icon: Edit },
-    { label: 'Archived', value: '1', change: '0%', icon: Archive }
+    { label: 'Total Pages', value: totalPages, icon: FileText },
+    { label: 'Published', value: publishedPages, icon: Check },
+    { label: 'Draft', value: draftPages, icon: Edit },
+    { label: 'Archived', value: archivedPages, icon: Archive }
   ];
+
+  // Helper to detect image fields (move to top-level so it's in scope)
+  const isImageField = (label) => {
+    const l = label.toLowerCase();
+    return (
+      l === 'image' ||
+      l === 'img' ||
+      l === 'url' ||
+      l === 'src' ||
+      l === 'href' ||
+      l === 'link' ||
+      l.endsWith('_image') ||
+      l.endsWith('_img') ||
+      l.endsWith('_url') ||
+      l.endsWith('_src') ||
+      l.includes('img') ||
+      l.includes('image') ||
+      l.includes('url') ||
+      l.includes('src')
+    );
+  };
 
   // Check authentication on mount
   useEffect(() => {
     const token = localStorage.getItem('adminToken');
-    if (!token) {
-      // No token found, redirect to login
-      window.location.href = '/admin';
-      return;
-    }
-    
-    // Token exists, load user data
-    try {
-      const userData = JSON.parse(localStorage.getItem('adminUser') || '{}');
-      setUser({ email: userData.email || 'admin', role: userData.role || 'admin' });
-    } catch (e) {
-      console.error('Error parsing user data:', e);
+    const userDataStr = localStorage.getItem('adminUser');
+
+    if (token && userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        if (userData && (userData.email || userData.role)) {
+          setUser({ email: userData.email || 'admin', role: userData.role || 'admin' });
+        } else {
+          // Invalid user data, clear storage
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminUser');
+        }
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+        // Clear corrupted data
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
+      }
     }
   }, []);
 
@@ -146,8 +187,36 @@ const AdminPanel = () => {
   }, [storePages, searchTerm]);
 
   const handleLogout = async () => {
-    await api.logout();
-    setUser(null);
+    try {
+      await api.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Always clear local storage and reset user state
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminUser');
+      setUser(null);
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoggingIn(true);
+    setLoginError('');
+
+    try {
+      const result = await api.login(loginForm.email, loginForm.password);
+      if (result.success) {
+        setUser({ email: result.user?.email || loginForm.email, role: result.user?.role || 'admin' });
+        setLoginForm({ email: '', password: '' });
+      } else {
+        setLoginError(result.message || 'Login failed');
+      }
+    } catch (error) {
+      setLoginError(error.message || 'An error occurred during login');
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   const pageTemplates = useMemo(() => {
@@ -159,256 +228,444 @@ const AdminPanel = () => {
     };
   }, [pageDoc, selectedPage]);
 
-  // Helper to detect image fields
-  const isImageField = (label) => {
+  // Helper to get field descriptions
+  const getFieldDescription = (label) => {
     const l = label.toLowerCase();
-    return (
-      l === 'image' ||
-      l === 'img' ||
-      l.endsWith('_image') ||
-      l.endsWith('_img') ||
-      l.includes('img') ||
-      l.includes('image')
-    );
+    const descriptions = {
+      title: 'Main heading for this section',
+      headline: 'Primary title that appears prominently',
+      heading: 'Section heading text',
+      subtitle: 'Secondary text that provides additional context',
+      description: 'Detailed explanation or content',
+      content: 'Main body text or content',
+      text: 'Text content for display',
+      summary: 'Brief overview or summary',
+      excerpt: 'Short preview or excerpt',
+      caption: 'Descriptive text for images or media',
+      alt: 'Alternative text for accessibility',
+      url: 'Web address or link',
+      link: 'Clickable link destination',
+      href: 'Hyperlink reference',
+      src: 'Source URL for media',
+      image: 'Image file or URL',
+      icon: 'Icon identifier or URL',
+      color: 'Color value (hex, rgb, or name)',
+      background: 'Background color or image',
+      button: 'Button text or label',
+      label: 'Display label for form elements',
+      placeholder: 'Hint text shown in empty fields',
+      name: 'Identifier or display name',
+      email: 'Email address',
+      phone: 'Phone number',
+      address: 'Physical or mailing address',
+      date: 'Date value',
+      time: 'Time value',
+      duration: 'Length of time',
+      price: 'Cost or pricing information',
+      amount: 'Quantity or monetary value',
+      count: 'Number of items',
+      limit: 'Maximum allowed value',
+      min: 'Minimum allowed value',
+      max: 'Maximum allowed value',
+      step: 'Increment value',
+      type: 'Content or element type',
+      category: 'Classification or grouping',
+      tag: 'Keyword or label',
+      status: 'Current state or condition',
+      priority: 'Importance level',
+      order: 'Display or processing order',
+      position: 'Placement or arrangement',
+      size: 'Dimensions or scale',
+      width: 'Horizontal dimension',
+      height: 'Vertical dimension',
+      margin: 'Outer spacing',
+      padding: 'Inner spacing',
+      border: 'Border styling',
+      radius: 'Corner rounding',
+      shadow: 'Drop shadow effect',
+      opacity: 'Transparency level',
+      visible: 'Visibility state',
+      enabled: 'Enabled/disabled state',
+      required: 'Required field indicator',
+      readonly: 'Read-only state',
+      disabled: 'Disabled state',
+      hidden: 'Hidden state',
+      collapsed: 'Collapsed state',
+      expanded: 'Expanded state',
+      active: 'Active state',
+      selected: 'Selected state',
+      checked: 'Checked state',
+      focused: 'Focus state',
+      hovered: 'Hover state',
+      clicked: 'Click state',
+      loading: 'Loading state',
+      error: 'Error state',
+      success: 'Success state',
+      warning: 'Warning state',
+      info: 'Information state'
+    };
+
+    return descriptions[l] || null;
   };
 
   // Upload image and set URL
   const handleImageUpload = async (file, onChange) => {
+    if (!file) {
+      alert('No file selected');
+      return;
+    }
     const formData = new FormData();
     formData.append('file', file);
+    let backendUrl = '';
+    // Try to get backend URL from env or fallback
+    if (import.meta && import.meta.env && import.meta.env.VITE_API_BASE_URL) {
+      backendUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
+    } else {
+      backendUrl = 'http://localhost:5000';
+    }
+    const uploadUrl = backendUrl + '/api/upload/image';
     try {
       const token = localStorage.getItem('adminToken');
-      // Update to backend URL (adjust port if needed)
-      const res = await fetch('http://localhost:5000/api/upload/image', {
+      if (!token) {
+        alert('You are not logged in as admin.');
+        return;
+      }
+      const res = await fetch(uploadUrl, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       });
-      const data = await res.json();
-      // Accept either url or path from backend
+      let data;
+      const contentType = res.headers.get('content-type') || '';
+      if (!res.ok) {
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+          throw new Error(data.message || 'Image upload failed');
+        } else {
+          const text = await res.text();
+          throw new Error(text);
+        }
+      } else {
+        if (contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          throw new Error('Unexpected response from server');
+        }
+      }
       if (data.url || data.path) {
         onChange({ target: { value: data.url || data.path } });
       } else {
-        alert('Image upload failed');
+        alert('Image upload failed: No file path returned.');
       }
     } catch (e) {
       console.error('Image upload error:', e);
-      alert('Image upload error');
+      alert('Image upload error: ' + (e.message || e));
     }
   };
 
   const renderFieldEditor = (label, value, onChange, type = 'text', placeholder = '') => {
-    if (isImageField(label)) {
+    const isImageFieldValue = isImageField(label);
+    const fieldDescription = getFieldDescription(label);
+    if (isImageFieldValue) {
       return (
         <div key={label} className="space-y-1">
-          <label className="text-xs font-medium text-gray-700">{label}</label>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={value || ''}
-              onChange={onChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-              placeholder={placeholder || 'Image URL'}
-            />
+          <div>
+            <label className="block text-xs font-semibold text-gray-800 mb-0.5 tracking-wide">{label}</label>
+            {fieldDescription && (
+              <p className="text-xs text-gray-400 mb-1 italic">{fieldDescription}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-2 p-2 bg-white rounded-lg border border-gray-100 shadow-sm">
             <input
               type="file"
-              accept="image/*"
+              accept="image/*,.svg,.webp,.bmp,.tiff,.ico"
               onChange={e => {
                 if (e.target.files && e.target.files[0]) {
                   handleImageUpload(e.target.files[0], onChange);
                 }
               }}
-              className="text-xs"
+              className="text-xs file:mr-2 file:rounded file:border-0 file:bg-indigo-50 file:text-indigo-700 file:px-2 file:py-1"
             />
+            {value && value.startsWith('/') && (
+              <div className="flex items-center gap-1">
+                <img src={value} alt="preview" className="rounded h-8 w-8 object-cover border border-gray-200" />
+                <span className="text-xs text-gray-400">Current</span>
+              </div>
+            )}
           </div>
-          {value && value.startsWith('/') && (
-            <img src={value} alt="preview" className="mt-2 rounded h-16 border" />
-          )}
         </div>
       );
     }
     if (type === 'textarea') {
       return (
         <div key={label} className="space-y-1">
-          <label className="text-xs font-medium text-gray-700">{label}</label>
+          <div>
+            <label className="block text-xs font-semibold text-gray-800 mb-0.5 tracking-wide">{label}</label>
+            {fieldDescription && (
+              <p className="text-xs text-gray-400 mb-1 italic">{fieldDescription}</p>
+            )}
+          </div>
           <textarea
             value={value || ''}
             onChange={onChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-3 py-2 bg-gray-50 rounded-lg text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none border-none shadow-sm placeholder-gray-400"
             rows={3}
-            placeholder={placeholder}
+            placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
           />
+          {isImageFieldValue && (
+            <div className="flex items-center gap-2 mt-2 p-2 bg-white rounded-lg border border-gray-100 shadow-sm">
+              <input
+                type="file"
+                accept="image/*,.svg,.webp,.bmp,.tiff,.ico"
+                onChange={e => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleImageUpload(e.target.files[0], onChange);
+                  }
+                }}
+                className="text-xs file:mr-2 file:rounded file:border-0 file:bg-indigo-50 file:text-indigo-700 file:px-2 file:py-1"
+              />
+              {value && value.startsWith('/') && (
+                <div className="flex items-center gap-1">
+                  <img src={value} alt="preview" className="rounded h-8 w-8 object-cover border border-gray-200" />
+                  <span className="text-xs text-gray-400">Current</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       );
     }
     return (
       <div key={label} className="space-y-1">
-        <label className="text-xs font-medium text-gray-700">{label}</label>
+        <div>
+          <label className="block text-xs font-semibold text-gray-800 mb-0.5 tracking-wide">{label}</label>
+          {fieldDescription && (
+            <p className="text-xs text-gray-400 mb-1 italic">{fieldDescription}</p>
+          )}
+        </div>
         <input
           type={type}
           value={value || ''}
           onChange={onChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-          placeholder={placeholder}
+          className="w-full px-3 py-2 bg-gray-50 rounded-lg text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none border-none shadow-sm placeholder-gray-400"
+          placeholder={placeholder || `Enter ${label.toLowerCase()}...`}
         />
+        {isImageFieldValue && (
+          <div className="flex items-center gap-2 mt-2 p-2 bg-white rounded-lg border border-gray-100 shadow-sm">
+            <input
+              type="file"
+              accept="image/*,.svg,.webp,.bmp,.tiff,.ico"
+              onChange={e => {
+                if (e.target.files && e.target.files[0]) {
+                  handleImageUpload(e.target.files[0], onChange);
+                }
+              }}
+              className="text-xs file:mr-2 file:rounded file:border-0 file:bg-indigo-50 file:text-indigo-700 file:px-2 file:py-1"
+            />
+            {value && value.startsWith('/') && (
+              <div className="flex items-center gap-1">
+                <img src={value} alt="preview" className="rounded h-8 w-8 object-cover border border-gray-200" />
+                <span className="text-xs text-gray-400">Current</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   };
 
   const renderArrayEditor = (label, items, onUpdate, itemType = 'object') => {
     if (!items || !Array.isArray(items)) return null;
-    
+
     // Get common fields from existing items to use as template for new items
     const getCommonFields = () => {
       if (items.length === 0) return [];
       const firstItem = items.find(item => item && typeof item === 'object' && Object.keys(item).length > 0);
       return firstItem ? Object.keys(firstItem) : [];
     };
-    
+
     const commonFields = getCommonFields();
-    
+
     return (
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-medium text-gray-700">{label} ({items.length})</label>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+            <label className="text-sm font-semibold text-gray-800">{label}</label>
+            <span className="text-xs text-gray-600 bg-white px-2 py-1 rounded-full border">
+              {items.length} {items.length === 1 ? 'item' : 'items'}
+            </span>
+          </div>
           <button
             onClick={() => {
               // Create new item with common fields initialized to empty strings
-              const newItem = itemType === 'object' 
+              const newItem = itemType === 'object'
                 ? commonFields.reduce((acc, key) => ({ ...acc, [key]: '' }), {})
                 : '';
               const updated = [...items, newItem];
               onUpdate(updated);
             }}
-            className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
+            className="px-3 py-1.5 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 transition-colors flex items-center gap-1"
           >
-            + Add Item
+            <Plus size={12} />
+            Add Item
           </button>
         </div>
-        <div className="space-y-3 border border-gray-200 rounded-lg p-3 bg-gray-50">
-          {items.map((item, idx) => {
-            const itemKeys = itemType === 'object' && item ? Object.keys(item) : [];
-            const hasFields = itemKeys.length > 0;
-            
-            return (
-              <div key={idx} className="bg-white rounded-lg p-3 border border-gray-200">
-                <div className="flex items-start justify-between mb-2">
-                  <span className="text-xs font-medium text-gray-600">Item {idx + 1}</span>
-                  <div className="flex items-center gap-2">
-                    {itemType === 'object' && (
-                      <button
-                        onClick={() => {
-                          const fieldName = prompt('Enter field name:');
-                          if (fieldName && fieldName.trim()) {
-                            const updated = [...items];
-                            updated[idx] = { ...item, [fieldName.trim()]: '' };
-                            onUpdate(updated);
-                          }
-                        }}
-                        className="text-xs text-indigo-600 hover:text-indigo-700 font-medium"
-                        title="Add Field"
-                      >
-                        + Field
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        const updated = items.filter((_, i) => i !== idx);
-                        onUpdate(updated);
-                      }}
-                      className="text-xs text-red-600 hover:text-red-700"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-                {itemType === 'object' ? (
-                  <div className="space-y-2">
-                    {hasFields ? (
-                      itemKeys.map((key) => (
-                        <div key={key} className="flex items-start gap-2">
-                          <div className="flex-1">
-                            {typeof item[key] === 'string' || typeof item[key] === 'number' ? (
-                              renderFieldEditor(
-                                key,
-                                item[key],
-                                (e) => {
-                                  const updated = [...items];
-                                  updated[idx] = { ...item, [key]: e.target.value };
-                                  onUpdate(updated);
-                                },
-                                key.toLowerCase().includes('description') || key.toLowerCase().includes('text') || key.toLowerCase().includes('content') ? 'textarea' : 'text'
-                              )
-                            ) : (
-                              <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-700">{key}</label>
-                                <input
-                                  type="text"
-                                  value={JSON.stringify(item[key])}
-                                  onChange={(e) => {
-                                    try {
-                                      const parsed = JSON.parse(e.target.value);
-                                      const updated = [...items];
-                                      updated[idx] = { ...item, [key]: parsed };
-                                      onUpdate(updated);
-                                    } catch {}
-                                  }}
-                                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-xs"
-                                  placeholder="JSON value"
-                                />
-                              </div>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => {
-                              const updated = [...items];
-                              const newItem = { ...item };
-                              delete newItem[key];
-                              updated[idx] = newItem;
-                              onUpdate(updated);
-                            }}
-                            className="text-xs text-red-600 hover:text-red-700 mt-6 px-2"
-                            title="Remove Field"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-4 text-sm text-gray-500">
-                        <p className="mb-2">No fields yet</p>
+        <div className="space-y-4 border border-gray-200 rounded-lg p-4 bg-white">
+          {items.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                <Plus size={20} className="text-gray-400" />
+              </div>
+              <p className="text-sm mb-3">No items yet</p>
+              <button
+                onClick={() => {
+                  const newItem = itemType === 'object'
+                    ? commonFields.reduce((acc, key) => ({ ...acc, [key]: '' }), {})
+                    : '';
+                  onUpdate([newItem]);
+                }}
+                className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors"
+              >
+                Add First Item
+              </button>
+            </div>
+          ) : (
+            items.map((item, idx) => {
+              const itemKeys = itemType === 'object' && item ? Object.keys(item) : [];
+              const hasFields = itemKeys.length > 0;
+
+              return (
+                <div key={idx} className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 border border-gray-200 shadow-sm">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center">
+                        <span className="text-xs font-semibold text-indigo-700">{idx + 1}</span>
+                      </div>
+                      <span className="text-sm font-medium text-gray-700">
+                        {itemType === 'object' ? 'Item' : 'Value'} {idx + 1}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {itemType === 'object' && (
                         <button
                           onClick={() => {
                             const fieldName = prompt('Enter field name:');
                             if (fieldName && fieldName.trim()) {
                               const updated = [...items];
-                              updated[idx] = { [fieldName.trim()]: '' };
+                              updated[idx] = { ...item, [fieldName.trim()]: '' };
                               onUpdate(updated);
                             }
                           }}
-                          className="text-xs text-indigo-600 hover:text-indigo-700 font-medium border border-indigo-300 rounded px-3 py-1"
+                          className="px-2 py-1 text-xs text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded transition-colors"
+                          title="Add Field"
                         >
-                          + Add First Field
+                          + Field
                         </button>
-                      </div>
-                    )}
+                      )}
+                      <button
+                        onClick={() => {
+                          const updated = items.filter((_, i) => i !== idx);
+                          onUpdate(updated);
+                        }}
+                        className="px-2 py-1 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                        title="Remove Item"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   </div>
-                ) : (
-                  <input
-                    type="text"
-                    value={item}
-                    onChange={(e) => {
-                      const updated = [...items];
-                      updated[idx] = e.target.value;
-                      onUpdate(updated);
-                    }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                    placeholder="Enter value"
-                  />
-                )}
-              </div>
-            );
-          })}
+                  {itemType === 'object' ? (
+                    <div className="space-y-3">
+                      {hasFields ? (
+                        itemKeys.map((key) => (
+                          <div key={key} className="flex items-start gap-3 p-3 bg-white rounded-md border border-gray-100">
+                            <div className="flex-1">
+                              {typeof item[key] === 'string' || typeof item[key] === 'number' ? (
+                                renderFieldEditor(
+                                  key,
+                                  item[key],
+                                  (e) => {
+                                    const updated = [...items];
+                                    updated[idx] = { ...item, [key]: e.target.value };
+                                    onUpdate(updated);
+                                  },
+                                  key.toLowerCase().includes('description') || key.toLowerCase().includes('text') || key.toLowerCase().includes('content') ? 'textarea' : 'text'
+                                )
+                              ) : (
+                                <div className="space-y-1">
+                                  <label className="block text-xs font-medium text-gray-700 mb-1">{key}</label>
+                                  <input
+                                    type="text"
+                                    value={JSON.stringify(item[key])}
+                                    onChange={(e) => {
+                                      try {
+                                        const parsed = JSON.parse(e.target.value);
+                                        const updated = [...items];
+                                        updated[idx] = { ...item, [key]: parsed };
+                                        onUpdate(updated);
+                                      } catch {}
+                                    }}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-xs focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                                    placeholder="JSON value"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => {
+                                const updated = [...items];
+                                const newItem = { ...item };
+                                delete newItem[key];
+                                updated[idx] = newItem;
+                                onUpdate(updated);
+                              }}
+                              className="text-xs text-red-600 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded transition-colors mt-6"
+                              title="Remove Field"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-4 text-sm text-gray-500 bg-gray-50 rounded-md">
+                          <p className="mb-2">No fields in this item</p>
+                          <button
+                            onClick={() => {
+                              const fieldName = prompt('Enter field name:');
+                              if (fieldName && fieldName.trim()) {
+                                const updated = [...items];
+                                updated[idx] = { [fieldName.trim()]: '' };
+                                onUpdate(updated);
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-indigo-600 text-white text-xs rounded-md hover:bg-indigo-700 transition-colors"
+                          >
+                            Add First Field
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-gray-700">Value</label>
+                      <input
+                        type="text"
+                        value={item}
+                        onChange={(e) => {
+                          const updated = [...items];
+                          updated[idx] = e.target.value;
+                          onUpdate(updated);
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Enter value"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     );
@@ -463,10 +720,24 @@ const AdminPanel = () => {
   const renderSectionEditor = (section) => {
     const sectionType = section.type || 'unknown';
     const sectionTitle = section.title || section.headline || section.heading || sectionType;
-    
+    const isExpanded = expandedSections.has(section.key);
+
+    const toggleExpansion = () => {
+      const newExpanded = new Set(expandedSections);
+      if (newExpanded.has(section.key)) {
+        newExpanded.delete(section.key);
+      } else {
+        newExpanded.add(section.key);
+      }
+      setExpandedSections(newExpanded);
+    };
+
     return (
-      <div key={section.key} className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+      <div key={section.key} className="bg-white rounded-xl border border-gray-200 shadow-sm">
+        <div
+          className="flex items-center justify-between p-5 cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={toggleExpansion}
+        >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg">
               <Layout className="text-indigo-600" size={18} />
@@ -476,72 +747,78 @@ const AdminPanel = () => {
               <p className="text-xs text-gray-500 capitalize">{sectionType} Section</p>
             </div>
           </div>
+          <ChevronRight
+            className={`text-gray-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+            size={16}
+          />
         </div>
-        
-        <div className="space-y-4">
-          {/* Type field */}
-          {renderFieldEditor(
-            'Type',
-            section.type,
-            (e) => updateSection(section.key, { type: e.target.value })
-          )}
-          
-          {/* Render all simple fields */}
-          {Object.keys(section).filter(key => 
-            key !== 'key' && 
-            key !== 'type' &&
-            typeof section[key] !== 'object' &&
-            !Array.isArray(section[key])
-          ).map((key, idx) => {
-            const value = section[key];
-            return (
-              <React.Fragment key={key}>
-                {renderFieldEditor(
-                  key,
-                  value,
-                  (e) => updateSection(section.key, { [key]: e.target.value }),
-                  key.toLowerCase().includes('description') || key.toLowerCase().includes('text') || key.toLowerCase().includes('content') ? 'textarea' : 'text'
-                )}
-              </React.Fragment>
-            );
-          })}
-          
-          {/* Render array fields */}
-          {Object.keys(section).filter(key => 
-            Array.isArray(section[key])
-          ).map((key, idx) => {
-            const items = section[key];
-            return (
-              <React.Fragment key={key}>
-                {renderArrayEditor(
-                  key,
-                  items,
-                  (updated) => updateSection(section.key, { [key]: updated }),
-                  items.length > 0 && typeof items[0] === 'object' ? 'object' : 'string'
-                )}
-              </React.Fragment>
-            );
-          })}
-          
-          {/* Render object fields */}
-          {Object.keys(section).filter(key => 
-            typeof section[key] === 'object' && 
-            section[key] !== null && 
-            !Array.isArray(section[key]) &&
-            key !== 'key'
-          ).map((key, idx) => {
-            const obj = section[key];
-            return (
-              <React.Fragment key={key}>
-                {renderObjectEditor(
-                  key,
-                  obj,
-                  (updated) => updateSection(section.key, { [key]: updated })
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
+
+        {isExpanded && (
+          <div className="px-5 pb-5 space-y-4">
+            {/* Type field */}
+            {renderFieldEditor(
+              'Type',
+              section.type,
+              (e) => updateSection(section.key, { type: e.target.value })
+            )}
+
+            {/* Render all simple fields */}
+            {Object.keys(section).filter(key =>
+              key !== 'key' &&
+              key !== 'type' &&
+              typeof section[key] !== 'object' &&
+              !Array.isArray(section[key])
+            ).map((key, idx) => {
+              const value = section[key];
+              return (
+                <React.Fragment key={key}>
+                  {renderFieldEditor(
+                    key,
+                    value,
+                    (e) => updateSection(section.key, { [key]: e.target.value }),
+                    key.toLowerCase().includes('description') || key.toLowerCase().includes('text') || key.toLowerCase().includes('content') ? 'textarea' : 'text'
+                  )}
+                </React.Fragment>
+              );
+            })}
+
+            {/* Render array fields */}
+            {Object.keys(section).filter(key =>
+              Array.isArray(section[key])
+            ).map((key, idx) => {
+              const items = section[key];
+              return (
+                <React.Fragment key={key}>
+                  {renderArrayEditor(
+                    key,
+                    items,
+                    (updated) => updateSection(section.key, { [key]: updated }),
+                    items.length > 0 && typeof items[0] === 'object' ? 'object' : 'string'
+                  )}
+                </React.Fragment>
+              );
+            })}
+
+            {/* Render object fields */}
+            {Object.keys(section).filter(key =>
+              typeof section[key] === 'object' &&
+              section[key] !== null &&
+              !Array.isArray(section[key]) &&
+              key !== 'key'
+            ).map((key, idx) => {
+              const obj = section[key];
+              return (
+                <React.Fragment key={key}>
+                  {renderObjectEditor(
+                    key,
+                    obj,
+                    (updated) => updateSection(section.key, { [key]: updated })
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   };
@@ -572,6 +849,85 @@ const AdminPanel = () => {
       setLoading(false);
     }
   };
+
+  // Show login form if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full mb-4">
+                <Shield className="text-white" size={32} />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900">Sabri CMS</h1>
+              <p className="text-gray-600 mt-2">Sign in to access the admin panel</p>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={loginForm.email}
+                  onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  placeholder="admin@example.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+
+              {loginError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-600">{loginError}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isLoggingIn ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    <LogIn size={18} />
+                    Sign In
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-500">
+                Secure admin access required
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50">
@@ -686,7 +1042,7 @@ const AdminPanel = () => {
                   {stats.map((stat, idx) => {
                     const Icon = stat.icon;
                     return (
-                      <div key={idx} className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                      <div key={idx} className="bg-white rounded-xl p-6 border-2 border-indigo-600 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between">
                           <div>
                             <p className="text-sm font-medium text-gray-600 mb-2">{stat.label}</p>
@@ -703,16 +1059,41 @@ const AdminPanel = () => {
 
                 <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
                   <h3 className="text-base font-semibold text-gray-900 mb-6">Quick Actions</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {['pages', 'stories', 'events', 'blogs'].map((section) => (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    {['pages', 'gallery', 'Events', 'faq'].map((section) => (
                       <button
                         key={section}
-                        onClick={() => setActiveSection(section)}
-                        className="p-4 border-2 border-gray-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50 transition-all text-center capitalize"
+                        onClick={() => setActiveSection(section.toLowerCase())}
+                        className="p-4 border-2 border-indigo-600 rounded-xl hover:border-indigo-700 hover:bg-indigo-50 transition-all text-center capitalize"
                       >
                         {section}
                       </button>
                     ))}
+                  </div>
+                  <h3 className="text-base font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-xs text-left">
+                      <thead>
+                        <tr className="text-gray-500 border-b">
+                          <th className="py-2 pr-4">Page</th>
+                          <th className="py-2 pr-4">Status</th>
+                          <th className="py-2 pr-4">Last Updated</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {storePages
+                          .slice()
+                          .sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0))
+                          .slice(0, 5)
+                          .map((page, idx) => (
+                            <tr key={page._id || page.slug || idx} className="border-b last:border-0">
+                              <td className="py-2 pr-4 font-medium text-indigo-700 cursor-pointer hover:underline" onClick={() => { setActiveSection('pages'); setSelectedPage(page.slug); }}>{page.title || page.slug || 'Untitled'}</td>
+                              <td className="py-2 pr-4 capitalize">{page.status || 'unknown'}</td>
+                              <td className="py-2 pr-4">{page.updatedAt ? new Date(page.updatedAt).toLocaleString() : (page.createdAt ? new Date(page.createdAt).toLocaleString() : '—')}</td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -735,23 +1116,30 @@ const AdminPanel = () => {
                     </div>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredPages.map((slug) => (
                     <button
                       key={slug}
                       onClick={() => setSelectedPage(slug)}
-                      className="bg-white rounded-xl p-5 border border-gray-200 hover:border-indigo-300 hover:shadow-md transition-all text-left group"
+                      className="relative group bg-white rounded-xl p-6 border-2 border-indigo-600 shadow-sm hover:shadow-md transition-all text-left overflow-hidden"
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg group-hover:from-indigo-100 group-hover:to-purple-100 transition-colors">
-                            <Layout className="text-indigo-600" size={18} />
-                          </div>
-                          <div className="min-w-0">
-                            <h3 className="font-semibold text-gray-900 text-sm truncate">{slug}</h3>
-                          </div>
+                      <span className="absolute right-0 top-0 m-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 opacity-90 group-hover:opacity-100 transition">Page</span>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="p-2 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
+                          <Layout className="text-indigo-600" size={20} />
                         </div>
-                        <ChevronRight className="text-gray-400 group-hover:text-indigo-600 transition-colors flex-shrink-0" size={16} />
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-base truncate group-hover:text-indigo-700 transition-colors">{
+                            slug
+                              .split('-')
+                              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                              .join(' ')
+                          }</h3>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-indigo-600 font-medium group-hover:text-indigo-700 transition">View & Edit</span>
+                        <ChevronRight className="text-indigo-300 group-hover:text-indigo-600 transition-colors flex-shrink-0" size={18} />
                       </div>
                     </button>
                   ))}
@@ -1026,4 +1414,4 @@ const AdminPanel = () => {
     </div>
   );
 };
-export default AdminPanel; 
+export default AdminPanel;

@@ -178,7 +178,7 @@ const HomePage = ({ onNavigate }) => {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-16">
                           {(section.items || []).map((stat, idx) => (
                             <div key={idx} className="bg-[#8B3E35] p-7 rounded-2xl text-center transition-all duration-300 hover:bg-[#7A3529]">
-                              <span className="block text-[2.75rem] md:text-[3.2rem] font-bold text-white leading-none">{String(stat.value).replace(/\+$/, '')}</span>
+                              <span className="block text-[2.75rem] md:text-[3.2rem] font-bold text-white leading-none">{stat.value}</span>
                               <span className="block text-[11px] font-bold text-white uppercase tracking-wide mt-3">{stat.label}</span>
                             </div>
                           ))}

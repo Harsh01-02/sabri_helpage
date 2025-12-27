@@ -2,20 +2,7 @@
 import React from 'react';
 
 
-const staticImages = [
-  { url: '/event1.jpg', caption: 'Annual Charity Gala' },
-  { url: '/event2.jpg', caption: 'Community Outreach Program' },
-  { url: '/event3.jpg', caption: 'Health Camp' },
-  { url: '/event4.jpg', caption: 'Volunteer Meetup' },
-  { url: '/event5.jpg', caption: 'Elderly Care Initiative' },
-  { url: '/event6.jpg', caption: 'Girl Child Education Drive' },
-  { url: '/elderlyCareImg.jpg', caption: 'Elderly Care' },
-  { url: '/MentalHealth.jpg', caption: 'Mental Health Workshop' },
-  { url: '/girlChildEducation.jpg', caption: 'Girl Child Education' },
-  { url: '/WaterFilteration.jpg', caption: 'Water Filtration Project' },
-  { url: '/events1.jpg', caption: 'Fundraiser Walkathon' },
-  { url: '/events2.jpg', caption: 'Awareness Campaign' },
-];
+// ...existing code...
 import { usePagesStore } from '../stores/pageInformationSlice';
 
 
@@ -27,15 +14,19 @@ const GalleryPage = ({ onNavigate }) => {
     }
   }, [pageData]);
 
+  // Extract sections
+  const headerSection = pageData?.sections?.find(s => s.type === 'header');
+  const gallerySection = pageData?.sections?.find(s => s.type === 'gallery_grid');
+
   return (
     <section className="py-0 bg-white">
       <div className="text-center py-10">
-        <h1 className="text-4xl font-bold mb-2 text-primary">Our Gallery</h1>
-        <p className="text-lg text-gray-600">A glimpse into our work and impact</p>
+        <h1 className="text-4xl font-bold mb-2 text-primary">{headerSection?.title || 'Our Gallery'}</h1>
+        <p className="text-lg text-gray-600">{headerSection?.subtitle || 'A glimpse into our work and impact'}</p>
       </div>
       <div className="max-w-5xl mx-auto px-4 pb-24 md:pb-32">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {staticImages.map((img, idx) => (
+          {(gallerySection?.images || []).map((img, idx) => (
             <div key={idx} className="rounded-xl overflow-hidden shadow border border-gray-100 bg-gray-50 flex flex-col">
               <img
                 src={img.url}

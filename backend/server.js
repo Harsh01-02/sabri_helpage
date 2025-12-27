@@ -38,6 +38,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static('uploads'));
 
 // Database Connection
 mongoose.connect(process.env.MONGODB_URI)
@@ -52,7 +53,7 @@ app.use('/api/public', require('./routes/public'));
 
 
 // ----------USABLE ROUTES --------------//
-
+app.use('/api/upload', require('./routes/uploadRoutes'));
 app.use('/api/pages', require('./routes/usable/pages'));
 
 // ----------USABLE ROUTES END ---------//
@@ -72,11 +73,11 @@ app.get('/', (req, res) => {
   res.json({ message: 'Sabri Helpage API is running!' });
 });
 
-// Error handling
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!', error: err.message });
-});
+
+// Not found middleware
+const { notFound, errorHandler } = require('./middleware/errorMiddleware');
+app.use(notFound);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

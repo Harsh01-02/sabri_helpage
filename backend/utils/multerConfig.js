@@ -10,16 +10,41 @@ const storage = multer.diskStorage({
   }
 });
 
+
 const uploadImage = multer({
   storage,
   fileFilter: function (req, file, cb) {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (ext === '.jpg' || ext === '.jpeg' || ext === '.png' || ext === '.gif') {
+    // Accept any file with an image MIME type
+    if (file.mimetype && file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
-      cb(new Error('Only images are allowed'));
+      cb(new Error('Only image files are allowed'));
     }
   }
 });
 
-module.exports = { uploadImage };
+const uploadVideo = multer({
+  storage,
+  fileFilter: function (req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext === '.mp4' || ext === '.avi' || ext === '.mov' || ext === '.wmv' || ext === '.mkv' || ext === '.webm') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only video files are allowed'));
+    }
+  }
+});
+
+const uploadPDF = multer({
+  storage,
+  fileFilter: function (req, file, cb) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ext === '.pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'));
+    }
+  }
+});
+
+module.exports = { uploadImage, uploadVideo, uploadPDF };

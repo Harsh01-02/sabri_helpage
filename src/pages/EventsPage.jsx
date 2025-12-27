@@ -2,85 +2,9 @@
 
 import React from 'react';
 import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
+import { usePagesStore } from '../stores/pageInformationSlice';
 
-
-// Example event data (replace with real data as needed)
-const allEvents = [
-  {
-    title: 'Annual Charity Gala 2025',
-    date: 'December 31, 2025',
-    time: '7:00 PM',
-    location: 'Grand Hall, City Center',
-    category: 'Featured',
-    description: 'Join us for our biggest event of the year, supporting elderly care and community outreach. Enjoy an evening of inspiration, entertainment, and giving back.',
-    image: '/events/2025-1.jpg',
-  },
-  {
-    title: 'Health Camp 2024',
-    date: 'August 15, 2024',
-    time: '10:00 AM',
-    location: 'Community Clinic',
-    category: 'Health',
-    description: 'A free health camp for seniors, with medical checkups and wellness workshops.',
-    image: '/events/2024-2.jpg',
-  },
-  {
-    title: 'Fundraiser Walkathon 2023',
-    date: 'March 10, 2023',
-    time: '8:00 AM',
-    location: 'Central Park',
-    category: 'Fundraiser',
-    description: 'Community walkathon to raise funds for elderly support programs.',
-    image: '/events/2023-3.jpg',
-  },
-  {
-    title: 'Spring Volunteer Meetup',
-    date: 'April 5, 2026',
-    time: '3:00 PM',
-    location: 'Volunteer Center',
-    category: 'Volunteer',
-    description: 'Kick off the new year with our volunteer team and plan upcoming projects.',
-    image: '/events/2026-1.jpg',
-  },
-  {
-    title: 'Elderly Tech Workshop',
-    date: 'June 20, 2026',
-    time: '11:00 AM',
-    location: 'Tech Hub',
-    category: 'Workshop',
-    description: 'Teaching seniors how to use smartphones and the internet safely.',
-    image: '/events/2026-2.jpg',
-  },
-];
-
-// Helper to parse date string to Date object
-const parseEventDate = (event) => {
-  // Accepts 'Month DD, YYYY' or ISO
-  return new Date(event.date + (event.time ? ' ' + event.time : ''));
-};
-
-// Sort and categorize events
-const today = new Date();
-let currentEvent = null;
-const upcomingEvents = [];
-const pastEvents = [];
-
-// Sort events by date ascending
-const sortedEvents = [...allEvents].sort((a, b) => parseEventDate(a) - parseEventDate(b));
-for (let i = 0; i < sortedEvents.length; i++) {
-  const eventDate = parseEventDate(sortedEvents[i]);
-  if (!currentEvent && eventDate >= today) {
-    currentEvent = sortedEvents[i];
-  } else if (eventDate > today) {
-    upcomingEvents.push(sortedEvents[i]);
-  } else if (eventDate < today) {
-    pastEvents.unshift(sortedEvents[i]); // most recent first
-  }
-}
-if (!currentEvent && sortedEvents.length > 0) {
-  // If all events are in the past, show the most recent as current
-  currentEvent = pastEvents.shift();
-}
+// ...existing code...
 
 
 const EventCard = ({ event, featured = false }) => (
@@ -132,16 +56,52 @@ const EventCard = ({ event, featured = false }) => (
 );
 
 const EventsPage = () => {
+  const pageData = usePagesStore((state) => state.getPageBySlug('events'));
+  React.useEffect(() => {
+    if (pageData) {
+      console.log('Events page data:', pageData);
+    }
+  }, [pageData]);
+
+  // Extract sections
+  const headerSection = pageData?.sections?.find(s => s.type === 'header');
+  const eventsSection = pageData?.sections?.find(s => s.type === 'events_list');
+  const allEvents = eventsSection?.allEvents || [];
+
+  // Helper to parse date string to Date object
+  const parseEventDate = (event) => {
+    return new Date(event.date + (event.time ? ' ' + event.time : ''));
+  };
+  // Sort and categorize events
+  const today = new Date();
+  let currentEvent = null;
+  const upcomingEvents = [];
+  const pastEvents = [];
+  const sortedEvents = [...allEvents].sort((a, b) => parseEventDate(a) - parseEventDate(b));
+  for (let i = 0; i < sortedEvents.length; i++) {
+    const eventDate = parseEventDate(sortedEvents[i]);
+    if (!currentEvent && eventDate >= today) {
+      currentEvent = sortedEvents[i];
+    } else if (eventDate > today) {
+      upcomingEvents.push(sortedEvents[i]);
+    } else if (eventDate < today) {
+      pastEvents.unshift(sortedEvents[i]);
+    }
+  }
+  if (!currentEvent && sortedEvents.length > 0) {
+    currentEvent = pastEvents.shift();
+  }
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Header - Causes/ILC style: centered, accent bg, rounded, shadow */}
+      {/* Header - dynamic */}
       <div className="w-full flex justify-center pt-12 pb-10">
         <div
           className="rounded-2xl shadow-md border border-gray-200 px-8 py-10 max-w-3xl w-full text-center"
-          style={{ background: '#b73d34' }}
+          style={{ background: headerSection?.backgroundColor || '#b73d34' }}
         >
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-white">Events</h1>
-          <p className="text-lg text-white/90">Join us in making a difference in our community</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 text-white">{headerSection?.title || 'Events'}</h1>
+          <p className="text-lg text-white/90">{headerSection?.subtitle || 'Join us in making a difference in our community'}</p>
         </div>
       </div>
       <div className="max-w-6xl mx-auto px-4 sm:px-8 py-10 md:py-16">

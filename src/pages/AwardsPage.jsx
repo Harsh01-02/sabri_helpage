@@ -1,50 +1,93 @@
-import React from 'react';
-import { COLORS } from '../constants/config';
+
+import React, { useState, useEffect } from 'react';
+import { usePagesStore } from '../stores/pageInformationSlice';
 import PageHeader from '../components/layout/PageHeader';
 
-const AWARD_IMAGES = [
-  { src: '/awards/award1.jpg', date: 'March 2023' },
-  { src: '/awards/award2.jpg', date: 'August 2022' },
-  { src: '/awards/award3.jpg', date: 'December 2021' },
-  { src: '/awards/award4.jpg', date: 'July 2020' },
-];
-
 const AwardsPage = () => {
-  return (
-    <section className="py-16 md:py-24" style={{ backgroundColor: COLORS.BG_LIGHT_GRAY }}>
-      <PageHeader title="Awards" subtitle="Recognitions of our journey" />
-      <div className="max-w-3xl mx-auto px-6">
-        <div className="text-center mb-10">
-          <h2 className="text-xl md:text-2xl font-normal mb-4 tracking-tight">
-            Sabri Helpage's Impactful Work
-          </h2>
-          <div className="mx-auto max-w-2xl">
-            {/* Removed duplicate heading */}
-            <ul className="text-base md:text-lg text-gray-700 mb-6 flex flex-col gap-3 items-center">
-              <li className="w-full max-w-xl text-center md:text-left">Formal awards and recognition are valuable, but our greatest reward is the tangible impact we create in the lives of our beneficiaries.</li>
-              <li className="w-full max-w-xl text-center md:text-left">The satisfaction, hope, and independence instilled in the elderly, street girls, and women we serve are the true testaments to our mission.</li>
-              <li className="w-full max-w-xl text-center md:text-left">Every smile, success story, and life transformed is an award in itself.</li>
-            </ul>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 justify-items-center">
-          {AWARD_IMAGES.map((img, idx) => (
-            <div key={img.src} className="flex flex-col items-center">
-              <div className="w-full h-56 rounded-xl overflow-hidden shadow bg-white flex items-center justify-center mb-3">
-                <img
-                  src={img.src}
-                  alt={`Award ${idx + 1}`}
-                  className="object-contain w-full h-full"
-                  onError={e => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/400x220?text=Award'; }}
-                />
-              </div>
-              <span className="text-sm text-gray-600 font-medium">{img.date}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+	const pageData = usePagesStore((state) => state.getPageBySlug('awards'));
+	const [selectedIdx, setSelectedIdx] = useState(0);
+
+	// Extract sections
+	const headerSection = pageData?.sections?.find(s => s.type === 'header');
+	const gallerySection = pageData?.sections?.find(s => s.type === 'awards_gallery');
+	const images = gallerySection?.images || [];
+	const autoScrollInterval = gallerySection?.autoScrollInterval || 3000;
+
+	const handleThumbClick = (idx) => setSelectedIdx(idx);
+	const handleScroll = (dir) => {
+		setSelectedIdx((prev) => {
+			if (images.length === 0) return 0;
+			if (dir === 'left') return prev === 0 ? images.length - 1 : prev - 1;
+			if (dir === 'right') return prev === images.length - 1 ? 0 : prev + 1;
+			return prev;
+		});
+	};
+
+	// Auto-scroll
+	useEffect(() => {
+		if (!images.length) return;
+		const interval = setInterval(() => {
+			setSelectedIdx((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+		}, autoScrollInterval);
+		return () => clearInterval(interval);
+	}, [images.length, autoScrollInterval]);
+
+	if (!pageData) return <div>Loading...</div>;
+
+	return (
+		<section className="pt-0 pb-16 md:pb-24 bg-gray-50">
+			<div className="max-w-4xl mx-auto px-4 md:px-8">
+				{/* Heading at the very top, no space above */}
+				<div className="text-center">
+					<PageHeader
+						title={headerSection?.title || pageData.title || 'Awards & Recognition'}
+						subtitle={headerSection?.subtitle || 'Celebrating our journey and honors'}
+						className="mb-0 mt-0 pt-0"
+					/>
+				</div>
+				{/* Gallery Section */}
+				<section className="flex flex-col items-center gap-12">
+					<div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl h-[32rem] rounded-3xl overflow-hidden shadow-lg bg-white flex items-center justify-center border border-gray-200 mb-4">
+						<button onClick={() => handleScroll('left')} className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 shadow hover:bg-white z-10">
+							<span className="sr-only">Previous</span>
+							<svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" /></svg>
+						</button>
+						{images.length > 0 ? (
+							<img
+								src={images[selectedIdx].src}
+								alt={images[selectedIdx].caption}
+								className="object-contain w-full h-full"
+								onError={e => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/400x600?text=Award'; }}
+							/>
+						) : (
+							<div className="flex items-center justify-center w-full h-full text-gray-400">No awards found.</div>
+						)}
+						<button onClick={() => handleScroll('right')} className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 shadow hover:bg-white z-10">
+							<span className="sr-only">Next</span>
+							<svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+						</button>
+					</div>
+					<div className="flex gap-4 overflow-x-auto pb-2 w-full max-w-xl justify-center">
+						{images.map((img, idx) => (
+							<button
+								key={img.src}
+								onClick={() => handleThumbClick(idx)}
+								className={`border-2 rounded-xl overflow-hidden w-24 h-20 flex-shrink-0 transition-all duration-200 shadow-sm ${selectedIdx === idx ? 'border-red-500 ring-2 ring-red-200' : 'border-gray-200'}`}
+								style={{ outline: selectedIdx === idx ? '2px solid #b73d34' : 'none', background: selectedIdx === idx ? '#fff6f6' : '#fff' }}
+							>
+								<img
+									src={img.src}
+									alt={img.caption}
+									className="object-cover w-full h-full"
+									onError={e => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/80x60?text=Award'; }}
+								/>
+							</button>
+						))}
+					</div>
+				</section>
+			</div>
+		</section>
+	);
 };
 
 export default AwardsPage;
