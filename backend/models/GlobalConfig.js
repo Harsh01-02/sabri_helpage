@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const globalConfigSchema = new mongoose.Schema({
   siteTitle: { type: String, default: 'Sabri Helpage' },
@@ -31,4 +31,4 @@ const globalConfigSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('GlobalConfig', globalConfigSchema);
+export default mongoose.model('GlobalConfig', globalConfigSchema);

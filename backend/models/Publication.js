@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const publicationSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -27,4 +27,4 @@ publicationSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('Publication', publicationSchema);
+export default mongoose.model('Publication', publicationSchema);

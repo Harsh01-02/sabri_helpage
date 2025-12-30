@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import { getDonors, getDonorById, createDonor, updateDonor, deleteDonor } from '../controllers/donorController.js';
+
 const router = express.Router();
-const { getDonors, getDonorById, createDonor, updateDonor, deleteDonor } = require('../controllers/donorController');
 
 router.get('/donors', getDonors);
 router.get('/donors/:id', getDonorById);
@@ -8,4 +9,4 @@ router.post('/donors', createDonor);
 router.put('/donors/:id', updateDonor);
 router.delete('/donors/:id', deleteDonor);
 
-module.exports = router;
+export default router;

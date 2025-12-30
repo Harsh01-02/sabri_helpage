@@ -1,50 +1,62 @@
-const multer = require('multer');
-const path = require('path');
+// Multer configuration for file uploads
+import multer from 'multer';
+import path from 'path';
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../../uploads'));
+    cb(null, path.join(process.cwd(), 'uploads/'));
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
 
-
-const uploadImage = multer({
-  storage,
-  fileFilter: function (req, file, cb) {
-    // Accept any file with an image MIME type
-    if (file.mimetype && file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed'));
-    }
-  }
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
 });
 
-const uploadVideo = multer({
-  storage,
-  fileFilter: function (req, file, cb) {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (ext === '.mp4' || ext === '.avi' || ext === '.mov' || ext === '.wmv' || ext === '.mkv' || ext === '.webm') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only video files are allowed'));
-    }
+// File type filters
+const imageFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
   }
+};
+
+const videoFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('video/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only video files are allowed!'), false);
+  }
+};
+
+const pdfFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf') {
+    cb(null, true);
+  } else {
+    cb(new Error('Only PDF files are allowed!'), false);
+  }
+};
+
+export const uploadImage = multer({
+  storage: storage,
+  fileFilter: imageFilter,
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
-const uploadPDF = multer({
-  storage,
-  fileFilter: function (req, file, cb) {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (ext === '.pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF files are allowed'));
-    }
-  }
+export const uploadVideo = multer({
+  storage: storage,
+  fileFilter: videoFilter,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for videos
 });
 
-module.exports = { uploadImage, uploadVideo, uploadPDF };
+export const uploadPDF = multer({
+  storage: storage,
+  fileFilter: pdfFilter,
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
+
+export default upload;

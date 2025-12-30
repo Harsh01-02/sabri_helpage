@@ -1,13 +1,23 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const auth = require('../middleware/auth');
-const fs = require('fs').promises;
-const path = require('path');
-const cors = require('cors');
+import auth from '../middleware/auth.js';
+import fs from 'fs/promises';
+import path from 'path';
+import cors from 'cors';
 
 // Import Models
-const GlobalConfig = require('../models/GlobalConfig');
-const Page = require('../models/Page');
+import GlobalConfig from '../models/GlobalConfig.js';
+import Page from '../models/Page.js';
+import Cause from '../models/Cause.js';
+import Story from '../models/Story.js';
+import Event from '../models/Event.js';
+import Blog from '../models/Blog.js';
+import Faq from '../models/Faq.js';
+import Award from '../models/Award.js';
+import Publication from '../models/Publication.js';
+import Contact from '../models/Contact.js';
+
+import CSR from '../models/CSR.js';
 
 // CORS configuration
 const corsOptions = {
@@ -435,31 +445,7 @@ router.delete('/contacts/:id', auth, async (req, res) => {
   }
 });
 
-// ========== INTERNSHIPS (View/Manage) ==========
 
-// Get all internship applications
-router.get('/internships', auth, async (req, res) => {
-  try {
-    const internships = await Internship.find().sort({ createdAt: -1 });
-    res.json(internships);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-// Update internship status
-router.put('/internships/:id/status', auth, async (req, res) => {
-  try {
-    const internship = await Internship.findByIdAndUpdate(
-      req.params.id,
-      { status: req.body.status },
-      { new: true }
-    );
-    res.json(internship);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
 
 // ========== CSR PROPOSALS (View/Manage) ==========
 
@@ -559,4 +545,4 @@ router.put('/frontend-files/:fileId', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

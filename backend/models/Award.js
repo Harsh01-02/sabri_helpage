@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const awardSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -24,4 +24,4 @@ awardSchema.pre('save', function(next) {
   next();
 });
 
-module.exports = mongoose.model('Award', awardSchema);
+export default mongoose.model('Award', awardSchema);

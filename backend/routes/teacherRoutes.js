@@ -1,11 +1,7 @@
-const express = require('express');
-const router = express.Router();
+import express from 'express';
+import { getTeachers, createTeacher, getTeacherById } from '../controllers/teacherController.js';
 
-const {
-  getTeachers,
-  createTeacher,
-  getTeacherById,
-} = require('../controllers/teacherController');
+const router = express.Router();
 
 // GET all teachers
 router.get('/teachers', getTeachers);
@@ -16,4 +12,4 @@ router.post('/teachers', createTeacher);
 // GET a single teacher by ID
 router.get('/teachers/:id', getTeacherById);
 
-module.exports = router;
+export default router;

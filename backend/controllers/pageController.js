@@ -1,6 +1,4 @@
-
-const Page = require('../models/Page');
-
+import Page from '../models/Page.js';
 
 const getAllPages = async (req, res) => {
   try {
@@ -10,7 +8,6 @@ const getAllPages = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 const getPageBySlug = async (req, res) => {
   try {
@@ -24,7 +21,6 @@ const getPageBySlug = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 const createPage = async (req, res) => {
   try {
@@ -43,7 +39,6 @@ const createPage = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 const duplicatePage = async (req, res) => {
   try {
@@ -64,7 +59,6 @@ const duplicatePage = async (req, res) => {
   }
 };
 
-
 const updatePage = async (req, res) => {
   try {
     const slug = req.params.slug.toLowerCase();
@@ -80,7 +74,6 @@ const updatePage = async (req, res) => {
   }
 };
 
-
 const deletePage = async (req, res) => {
   try {
     const slug = req.params.slug.toLowerCase();
@@ -91,7 +84,7 @@ const deletePage = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   getAllPages,
   getPageBySlug,
   createPage,

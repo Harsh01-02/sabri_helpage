@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { getBlogs, getBlogById, createBlog, updateBlog, deleteBlog } from '../controllers/blogController.js';
+import { protect } from '../middleware/authMiddleware.js';
+
 const router = express.Router();
-const { getBlogs, getBlogById, createBlog, updateBlog, deleteBlog } = require('../controllers/blogController');
-const { protect } = require('../middleware/authMiddleware');
 
 // Use plural collection path: /api/blogs
 router.get('/blogs', getBlogs);
@@ -10,4 +11,4 @@ router.post('/blogs', protect, createBlog);
 router.put('/blogs/:id', protect, updateBlog);
 router.delete('/blogs/:id', protect, deleteBlog);
 
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const DonationSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
@@ -10,4 +10,4 @@ const DonationSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Donation', DonationSchema, 'donations');
+export default mongoose.model('Donation', DonationSchema, 'donations');

@@ -1,4 +1,4 @@
-exports.uploadFile = (req, res) => {
+export const uploadFile = (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });
   }

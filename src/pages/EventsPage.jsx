@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
 import { usePagesStore } from '../stores/pageInformationSlice';
@@ -56,7 +54,11 @@ const EventCard = ({ event, featured = false }) => (
 );
 
 const EventsPage = () => {
-  const pageData = usePagesStore((state) => state.getPageBySlug('events'));
+  const fetchPages = usePagesStore((state) => state.fetchPages);
+  const pageData = usePagesStore((state) => state.getPageBySlug('events-detailed'));
+  React.useEffect(() => {
+    fetchPages();
+  }, [fetchPages]);
   React.useEffect(() => {
     if (pageData) {
       console.log('Events page data:', pageData);

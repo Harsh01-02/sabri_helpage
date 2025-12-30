@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const csrSchema = new mongoose.Schema({
   companyName: { type: String, required: true },
@@ -21,4 +21,4 @@ const csrSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('CSR', csrSchema);
+export default mongoose.model('CSR', csrSchema);

@@ -1,6 +1,9 @@
-const mongoose = require('mongoose');
-const Page = require('../models/Page');
-require('dotenv').config();
+
+import mongoose from 'mongoose';
+import Page from '../models/Page.js';
+import dotenv from 'dotenv';
+import pages from '../pages.js';
+dotenv.config();
 
 const seedPages = async () => {
   try {
@@ -12,11 +15,7 @@ const seedPages = async () => {
     await Page.deleteMany({});
     console.log('🗑️  Cleared existing pages');
 
-    // Create all 21 pages
-    const pages = [
-      // ... (all page objects from your provided code)
-    ];
-            type: 'programs',
+    // Use imported pages array from pages.js
 
     // Insert all pages
     const result = await Page.insertMany(pages);

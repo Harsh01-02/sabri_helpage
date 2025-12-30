@@ -1,10 +1,22 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config({ path: '.env' });
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+
+// Routes imports
+import authRoutes from './routes/auth.js';
+import adminRoutes from './routes/admin.js';
+import publicRoutes from './routes/public.js';
+import uploadRoutes from './routes/uploadRoutes.js';
+import pagesRoutes from './routes/usable/pages.js'; // Will fix below
+
+// Middleware imports
+import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+
+// Load environment variables
+dotenv.config({ path: '.env' });
 
 const app = express();
-
 
 // Dynamic CORS configuration from environment variable
 const defaultOrigins = [
@@ -16,6 +28,7 @@ const defaultOrigins = [
   'http://localhost:5178',
   'http://localhost:3000'
 ];
+
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
   : defaultOrigins;
@@ -46,16 +59,13 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/admin', require('./routes/admin'));
-
-app.use('/api/public', require('./routes/public'));
-
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/public', publicRoutes);
 
 // ----------USABLE ROUTES --------------//
-app.use('/api/upload', require('./routes/uploadRoutes'));
-app.use('/api/pages', require('./routes/usable/pages'));
-
+app.use('/api/upload', uploadRoutes);
+app.use('/api/pages', pagesRoutes);
 // ----------USABLE ROUTES END ---------//
 
 // Public config endpoint
@@ -73,9 +83,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Sabri Helpage API is running!' });
 });
 
-
 // Not found middleware
-const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 app.use(notFound);
 app.use(errorHandler);
 

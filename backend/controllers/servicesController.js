@@ -1,8 +1,8 @@
-const Contact = require('../models/Contact');
-const Subscription = require('../models/Subscription');
-const Donation = require('../models/Donation');
+import Contact from '../models/Contact.js';
+import Subscription from '../models/Subscription.js';
+import Donation from '../models/Donation.js';
 
-const createContact = async (req, res) => {
+export const createContact = async (req, res) => {
   try {
     const contact = new Contact(req.body);
     await contact.save();
@@ -12,7 +12,7 @@ const createContact = async (req, res) => {
   }
 };
 
-const createSubscription = async (req, res) => {
+export const createSubscription = async (req, res) => {
   try {
     const subscription = new Subscription(req.body);
     await subscription.save();
@@ -22,7 +22,7 @@ const createSubscription = async (req, res) => {
   }
 };
 
-const createDonation = async (req, res) => {
+export const createDonation = async (req, res) => {
   try {
     const donation = new Donation(req.body);
     await donation.save();
@@ -32,8 +32,4 @@ const createDonation = async (req, res) => {
   }
 };
 
-module.exports = {
-  createContact,
-  createSubscription,
-  createDonation,
-};
+// ES module exports above

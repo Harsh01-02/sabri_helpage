@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { createContact, createSubscription, createDonation } from '../controllers/servicesController.js';
+import { getPageBySlug } from '../controllers/pageController.js';
+
 const router = express.Router();
-const { createContact, createSubscription, createDonation } = require('../controllers/servicesController');
-const { getPageBySlug } = require('../controllers/pageController');
 
 // Service routes
 router.post('/contact', createContact);
@@ -19,4 +20,4 @@ router.get('/stories', (req, res) => {
   return getPageBySlug(req, res);
 });
 
-module.exports = router;
+export default router;

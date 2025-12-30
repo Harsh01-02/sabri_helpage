@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
+import Page from '../../models/Page.js';
+
 const router = express.Router();
-const Page = require('../../models/Page');
 
 /**
  * GET /api/pages
@@ -43,4 +44,4 @@ router.get('/:slug', async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;
