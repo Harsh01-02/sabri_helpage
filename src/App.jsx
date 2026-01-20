@@ -78,10 +78,17 @@ const App = () => {
   const fetchPages = async () => {
     try {
       setIsLoading(true);
-      const pages = await api.getPages(); // exact api call 
+      const pages = await api.getPages(); // exact api call
       setPages(pages); // This sets the whole data in the zustand store or global state
       console.log("Full pages data from backend:", pages);
-      
+
+      // Test fetch to verify backend connection
+      const API = import.meta.env.VITE_API_URL;
+      fetch(`${API}/api/pages`)  // replace /api/yourRoute with your backend route
+        .then(res => res.json())
+        .then(data => console.log("Test fetch data:", data))
+        .catch(err => console.error("Test fetch error:", err));
+
     } catch (e) {
       console.error(e);
     } finally {
