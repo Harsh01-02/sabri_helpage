@@ -111,7 +111,6 @@ const api = {
         }
       });
 
-      data = data['data']
       
       if (data.token) {
         if (typeof window !== 'undefined') {
