@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { LogIn, Eye, EyeOff } from 'lucide-react';
 import api from '../services/api.mjs';
-
 import { useNavigate } from 'react-router-dom';
 
 const AdminLogin = ({ onLogin }) => {
   const navigate = useNavigate();
-  const [credentials, setCredentials] = useState({ email: '', password: '' });
+  const [credentials, setCredentials] = useState({ username: '', password: '' }); // CHANGED
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -24,7 +23,7 @@ const AdminLogin = ({ onLogin }) => {
     setError('');
 
     try {
-      const data = await api.login(credentials.email, credentials.password);
+      const data = await api.login(credentials.username, credentials.password); // CHANGED
       
       if (data.token) {
         localStorage.setItem('adminToken', data.token);
@@ -63,10 +62,10 @@ const AdminLogin = ({ onLogin }) => {
               </label>
               <input
                 type="text"
-                value={credentials.email}
-                onChange={(e) => setCredentials({...credentials, email: e.target.value})}
+                value={credentials.username} // CHANGED
+                onChange={(e) => setCredentials({...credentials, username: e.target.value})} // CHANGED
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Enter email"
+                placeholder="Enter username" // CHANGED (optional)
                 required
               />
             </div>

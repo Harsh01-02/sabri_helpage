@@ -1,6 +1,3 @@
-// src/services/api.mjs
-// Functional API client to avoid `this` binding issues when passing methods
-
 import { API_BASE_URL } from '../constants/config.js';
 
 const jsonRequest = async (endpoint, options = {}) => {
@@ -101,11 +98,11 @@ const api = {
   getConfig: () => jsonRequest('/config'),
   
   // Admin endpoints
-  login: async (email, password) => {
+  login: async (username, password) => {
     try {
       let data = await jsonRequest('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ username, password }),
         headers: {
           'Content-Type': 'application/json'
         }

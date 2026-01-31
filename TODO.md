@@ -9,3 +9,6 @@
 - [ ] Convert scripts to ES modules (createAdmin.js, createAdminUser.js, createSuperAdmin.js, seedPages.js)
 - [ ] Convert server.js to ES modules
 - [ ] Test server startup and functionality
+
+# Login Issue Fix
+- [x] Recreated admin user with properly hashed password (email: admin, password: admin123)
