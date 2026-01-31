@@ -1,3 +1,6 @@
+JS
+Copy
+
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -26,10 +29,16 @@ const corsOptions = {
 // Login route
 router.post('/login', cors(corsOptions), async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body; // CHANGED: email → username
 
-    // Find user
-    const user = await User.findOne({ email }).select('+password');
+    // Find user by username (check both username and email fields)
+    const user = await User.findOne({ 
+      $or: [
+        { username: username },
+        { email: username }
+      ]
+    }).select('+password');
+    
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -50,6 +59,7 @@ router.post('/login', cors(corsOptions), async (req, res) => {
     const payload = {
       user: {
         id: user.id,
+        username: user.username || user.email, // Use username if available, fallback to email
         email: user.email,
         role: user.role
       }
@@ -63,19 +73,19 @@ router.post('/login', cors(corsOptions), async (req, res) => {
         if (err) throw err;
         res.json({
           success: true,
-          data: {
-            token,
-            user: {
-              id: user.id,
-              email: user.email,
-              role: user.role
-            }
+          token, // CHANGED: Moved token to root level for consistency
+          user: { // CHANGED: Moved user to root level for consistency
+            id: user.id,
+            name: user.name,
+            username: user.username || user.email,
+            email: user.email,
+            role: user.role
           }
         });
       }
     );
   } catch (err) {
-    console.error(err.message);
+    console.error('Login error:', err.message);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -93,7 +103,7 @@ router.post('/logout', cors(corsOptions), async (req, res) => {
       try {
         // Verify token to get user info for logging
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-        console.log(`User ${decoded.user.email} logged out`);
+        console.log(`User ${decoded.user.email || decoded.user.username} logged out`);
       } catch (err) {
         // Token might be expired or invalid, but we still allow logout
         console.log('Logout requested with invalid/expired token');
@@ -101,7 +111,6 @@ router.post('/logout', cors(corsOptions), async (req, res) => {
     }
 
     // Since JWT is stateless, we just return success
-    // In a production app with token blacklisting, you'd invalidate the token here
     res.json({
       success: true,
       message: 'Logged out successfully'
@@ -118,10 +127,16 @@ router.post('/logout', cors(corsOptions), async (req, res) => {
 // Register route (for creating super admin)
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { username, email, password, role } = req.body; // ADDED: username
 
     // Check if user exists
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ 
+      $or: [
+        { username: username },
+        { email: email }
+      ]
+    });
+    
     if (user) {
       return res.status(400).json({
         success: false,
@@ -131,6 +146,7 @@ router.post('/register', async (req, res) => {
 
     // Create user
     user = new User({
+      username: username || email, // Use username, fallback to email
       email,
       password,
       role: role || 'admin'
@@ -146,6 +162,7 @@ router.post('/register', async (req, res) => {
     const payload = {
       user: {
         id: user.id,
+        username: user.username,
         email: user.email,
         role: user.role
       }
@@ -159,13 +176,12 @@ router.post('/register', async (req, res) => {
         if (err) throw err;
         res.json({
           success: true,
-          data: {
-            token,
-            user: {
-              id: user.id,
-              email: user.email,
-              role: user.role
-            }
+          token,
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+            role: user.role
           }
         });
       }
