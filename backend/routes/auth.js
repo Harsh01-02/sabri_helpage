@@ -1,5 +1,3 @@
-JS
-Copy
 
 import express from 'express';
 import bcrypt from 'bcryptjs';
@@ -20,7 +18,8 @@ const corsOptions = {
     'http://localhost:5173', 
     'http://localhost:5174',
     'http://localhost:5175',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'sabri-helpage.vercel.app'
   ],
   credentials: true,
   optionsSuccessStatus: 200

@@ -1,5 +1,6 @@
-import 'dotenv/config'; 
+import 'dotenv/config';
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 import User from './models/User.js'; // adjust path if needed
 
 const MONGO_URI = process.env.MONGODB_URI;
@@ -16,10 +17,15 @@ async function seedAdmin() {
       await User.deleteOne({ email: 'admin' });
     }
 
+    // Hash password manually
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('admin123', salt);
+
     const admin = await User.create({
       name: 'Admin',
+      username: 'admin',
       email: 'admin',
-      password: 'admin123', // will be hashed automatically
+      password: hashedPassword,
       role: 'super-admin'
     });
 
