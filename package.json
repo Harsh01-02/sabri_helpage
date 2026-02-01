@@ -10,8 +10,10 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "cloudinary": "^1.41.3",
     "lucide-react": "^0.553.0",
     "multer": "^2.0.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

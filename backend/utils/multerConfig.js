@@ -1,20 +1,7 @@
-// Multer configuration for file uploads
+// Multer configuration for file uploads (Render / Cloud safe)
 import multer from 'multer';
-import path from 'path';
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, path.join(process.cwd(), 'uploads/'));
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-});
+const storage = multer.memoryStorage(); // ✅ IMPORTANT: no local disk
 
 // File type filters
 const imageFilter = (req, file, cb) => {
@@ -41,22 +28,23 @@ const pdfFilter = (req, file, cb) => {
   }
 };
 
+// Upload handlers
 export const uploadImage = multer({
-  storage: storage,
+  storage,
   fileFilter: imageFilter,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 });
 
 export const uploadVideo = multer({
-  storage: storage,
+  storage,
   fileFilter: videoFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB for videos
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
 });
 
 export const uploadPDF = multer({
-  storage: storage,
+  storage,
   fileFilter: pdfFilter,
   limits: { fileSize: 10 * 1024 * 1024 },
 });
 
-export default upload;
+export default multer({ storage });

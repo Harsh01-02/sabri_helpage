@@ -1,12 +1,36 @@
 import express from 'express';
-const router = express.Router();
 import { uploadFile } from '../controllers/uploadController.js';
 import { uploadImage, uploadVideo, uploadPDF } from '../utils/multerConfig.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { permit } from '../middleware/roleMiddleware.js';
 
-router.post('/image', protect, permit('editor', 'manager', 'admin', 'super-admin'), uploadImage.single('file'), uploadFile);
-router.post('/video', protect, permit('editor', 'manager', 'admin', 'super-admin'), uploadVideo.single('file'), uploadFile);
-router.post('/pdf', protect, permit('editor', 'manager', 'admin', 'super-admin'), uploadPDF.single('file'), uploadFile);
+const router = express.Router();
+
+// Image upload
+router.post(
+  '/image',
+  protect,
+  permit('editor', 'manager', 'admin', 'super-admin'),
+  uploadImage.single('file'), // field name MUST be "file"
+  uploadFile
+);
+
+// Video upload
+router.post(
+  '/video',
+  protect,
+  permit('editor', 'manager', 'admin', 'super-admin'),
+  uploadVideo.single('file'),
+  uploadFile
+);
+
+// PDF upload
+router.post(
+  '/pdf',
+  protect,
+  permit('editor', 'manager', 'admin', 'super-admin'),
+  uploadPDF.single('file'),
+  uploadFile
+);
 
 export default router;
