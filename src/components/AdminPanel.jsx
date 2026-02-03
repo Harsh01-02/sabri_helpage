@@ -316,13 +316,11 @@ const AdminPanel = () => {
     }
     const formData = new FormData();
     formData.append('file', file);
-    let backendUrl = '';
-    // Try to get backend URL from env or fallback
-    if (import.meta && import.meta.env && import.meta.env.VITE_API_BASE_URL) {
-      backendUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
-    } else {
-      backendUrl = 'http://localhost:5000';
+    if (!import.meta.env.VITE_API_BASE_URL) {
+      alert('Backend URL is not configured. Please set VITE_API_BASE_URL environment variable.');
+      return;
     }
+    let backendUrl = import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
     const uploadUrl = backendUrl + '/api/upload/image';
     try {
       const token = localStorage.getItem('adminToken');
